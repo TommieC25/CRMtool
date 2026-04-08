@@ -1,8 +1,8 @@
 {
   "name": "CRM Demo",
   "short_name": "CRM Demo",
-  "start_url": "/FieldCRM-Demo/",
-  "scope": "/FieldCRM-Demo/",
+  "start_url": "/CRMtool/",
+  "scope": "/CRMtool/",
   "display": "standalone",
   "background_color": "#1e3a8a",
   "theme_color": "#1e3a8a",
