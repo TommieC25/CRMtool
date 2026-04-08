@@ -323,7 +323,7 @@ function openPracticeContactModal() {
 editingContactId = null;
 $('contactForm').reset();
 $('contactModalTitle').textContent = 'Log Practice Call';
-$('authorName').value = 'Tom';
+$('authorName').value = localStorage.getItem('lastCallLogAuthor') || '';
 $('contactSaveBtn').textContent = 'Save Note';
 $('contactSaveBtn').className = 'btn-primary';
 setToday();
@@ -424,7 +424,7 @@ if (!loc) return;
 editingContactId = null;
 $('contactForm').reset();
 $('contactModalTitle').textContent = 'Log Call / Visit';
-$('authorName').value = 'Tom';
+$('authorName').value = localStorage.getItem('lastCallLogAuthor') || '';
 $('contactSaveBtn').textContent = 'Save Note';
 $('contactSaveBtn').className = 'btn-primary';
 setToday();

@@ -3,6 +3,7 @@ let _taskDetailLogs = {};
 let activitySubTab = 'history'; // 'history' | 'activity' | 'tasks'
 let _activitySearchTerm = '';
 let _activityAuthorFilter = '';
+let _knownAuthors = [];
 let _taskSectionsState = {}; // tracks which sections are collapsed by id
 function toggleTaskSection(id){
   _taskSectionsState[id]=!_taskSectionsState[id];
@@ -17,7 +18,7 @@ const fmtD = ds => { if(!ds)return''; const d=new Date(ds+'T12:00:00'); return d
 function _activityTabsHtml() {
 const tabs = [{id:'history',label:'HISTORY'},{id:'activity',label:'ACTIVITY'},{id:'tasks',label:'TASKS'}];
 const esc = _activitySearchTerm.replace(/"/g,'&quot;');
-return `<div style="display:flex;gap:0.5rem;margin-bottom:0.75rem;padding-bottom:0.75rem;border-bottom:2px solid #f0f0f0;">`+tabs.map(t=>`<button onclick="switchActivityTab('${t.id}')" style="padding:0.45rem 0.9rem;border:none;border-radius:6px;font-size:0.78rem;font-weight:700;cursor:pointer;letter-spacing:0.5px;transition:all 0.15s;-webkit-tap-highlight-color:transparent;${activitySubTab===t.id?'background:#1e3a8a;color:white;':'background:#e5e7eb;color:#374151;'}">${t.label}</button>`).join('')+`</div><div style="margin-bottom:1rem;position:relative;display:flex;align-items:center;"><span style="position:absolute;left:0.65rem;font-size:0.95rem;pointer-events:none;">🔍</span><input type="search" id="activitySearchInput" value="${esc}" oninput="activitySearch(this.value)" onchange="activitySearch(this.value)" onsearch="activitySearch(this.value)" placeholder="Search by name, practice, city, notes…" style="width:100%;padding:0.5rem 2rem 0.5rem 2.1rem;border:1px solid #d1d5db;border-radius:8px;font-size:0.9rem;font-family:inherit;background:#fff;" autocapitalize="none" autocorrect="off" spellcheck="false">${_activitySearchTerm?`<button onclick="activitySearch('')" style="position:absolute;right:0.6rem;background:none;border:none;font-size:1.2rem;cursor:pointer;color:#999;line-height:1;padding:0;">×</button>`:''}</div><div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem;"><span style="font-size:0.8rem;color:#666;font-weight:600;white-space:nowrap;">By:</span><select onchange="setActivityAuthorFilter(this.value)" style="padding:0.35rem 0.6rem;border:1px solid #d1d5db;border-radius:7px;font-size:0.85rem;font-family:inherit;background:#fff;cursor:pointer;"><option value=""${!_activityAuthorFilter?' selected':''}>All</option><option value="Tom"${_activityAuthorFilter==='Tom'?' selected':''}>Tom</option><option value="Travis"${_activityAuthorFilter==='Travis'?' selected':''}>Travis</option></select></div>`;
+return `<div style="display:flex;gap:0.5rem;margin-bottom:0.75rem;padding-bottom:0.75rem;border-bottom:2px solid #f0f0f0;">`+tabs.map(t=>`<button onclick="switchActivityTab('${t.id}')" style="padding:0.45rem 0.9rem;border:none;border-radius:6px;font-size:0.78rem;font-weight:700;cursor:pointer;letter-spacing:0.5px;transition:all 0.15s;-webkit-tap-highlight-color:transparent;${activitySubTab===t.id?'background:#1e3a8a;color:white;':'background:#e5e7eb;color:#374151;'}">${t.label}</button>`).join('')+`</div><div style="margin-bottom:1rem;position:relative;display:flex;align-items:center;"><span style="position:absolute;left:0.65rem;font-size:0.95rem;pointer-events:none;">🔍</span><input type="search" id="activitySearchInput" value="${esc}" oninput="activitySearch(this.value)" onchange="activitySearch(this.value)" onsearch="activitySearch(this.value)" placeholder="Search by name, practice, city, notes…" style="width:100%;padding:0.5rem 2rem 0.5rem 2.1rem;border:1px solid #d1d5db;border-radius:8px;font-size:0.9rem;font-family:inherit;background:#fff;" autocapitalize="none" autocorrect="off" spellcheck="false">${_activitySearchTerm?`<button onclick="activitySearch('')" style="position:absolute;right:0.6rem;background:none;border:none;font-size:1.2rem;cursor:pointer;color:#999;line-height:1;padding:0;">×</button>`:''}</div><div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem;"><span style="font-size:0.8rem;color:#666;font-weight:600;white-space:nowrap;">By:</span><select onchange="setActivityAuthorFilter(this.value)" style="padding:0.35rem 0.6rem;border:1px solid #d1d5db;border-radius:7px;font-size:0.85rem;font-family:inherit;background:#fff;cursor:pointer;"><option value=""${!_activityAuthorFilter?' selected':''}>All</option>${_knownAuthors.map(a=>`<option value="${a}"${_activityAuthorFilter===a?' selected':''}>${a}</option>`).join('')}</select></div>`;
 }
 
 // --- Activity tab switcher (called from sub-tab buttons) ---
@@ -266,6 +267,7 @@ async function renderHistoryView(){
 try{
 const{data:allLogs,error}=await db.from('contact_logs').select('*').order('contact_date',{ascending:false}).order('created_at',{ascending:false}).limit(200);
 if(error)throw error;
+_knownAuthors=[...new Set((allLogs||[]).map(l=>l.author).filter(Boolean))].sort();
 const physMap={};physicians.forEach(p=>physMap[p.id]=p);
 const today=localDate();
 const search=_activitySearchTerm||$('searchInput').value.trim().toLowerCase();
@@ -298,6 +300,7 @@ async function renderActivityView(){
 try{
 const{data:allLogs,error}=await db.from('contact_logs').select('*').order('contact_date',{ascending:false}).order('created_at',{ascending:false}).limit(200);
 if(error)throw error;
+_knownAuthors=[...new Set((allLogs||[]).map(l=>l.author).filter(Boolean))].sort();
 const physMap={};physicians.forEach(p=>physMap[p.id]=p);
 // ACTIVITY tab shows only pure notes (no tasks — exclude records with reminder_date)
 const pureNotes=allLogs.filter(l=>!l.reminder_date);

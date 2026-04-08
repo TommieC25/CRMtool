@@ -1,5 +1,26 @@
 // === js/nav.js === Realtime subscriptions, view routing, sidebar, render helpers, home view
 
+// --- Author badge color (dynamic, no hardcoded names) ---
+const _authorColorPalette = [
+  {bg:'#dbeafe',color:'#1d4ed8'},{bg:'#f3e8ff',color:'#7e22ce'},{bg:'#dcfce7',color:'#166534'},
+  {bg:'#fef9c3',color:'#854d0e'},{bg:'#ffe4e6',color:'#be123c'},{bg:'#e0f2fe',color:'#0369a1'}
+];
+const _authorColorMap = {};
+let _authorColorIdx = 0;
+function authorBadgeStyle(author) {
+  if (!author) return '';
+  if (!_authorColorMap[author]) {
+    _authorColorMap[author] = _authorColorPalette[_authorColorIdx % _authorColorPalette.length];
+    _authorColorIdx++;
+  }
+  const c = _authorColorMap[author];
+  return `background:${c.bg};color:${c.color};`;
+}
+function authorBadgeHtml(author) {
+  if (!author) return '';
+  return `<span style="font-size:0.7rem;font-weight:700;padding:0.1rem 0.45rem;border-radius:10px;${authorBadgeStyle(author)}">${author}</span>`;
+}
+
 // --- Realtime ---
 function setupRealtimeSubscription() {
 let _reloadTimer=null;
@@ -463,7 +484,7 @@ html += `<div class="contact-entry" style="cursor:pointer;border-left-color:#dc2
 <button onclick="event.stopPropagation();completeReminder('${r.id}')" title="Mark complete" style="background:none;border:2px solid #dc2626;color:#dc2626;border-radius:50%;width:22px;height:22px;min-width:22px;cursor:pointer;font-size:0.75rem;display:flex;align-items:center;justify-content:center;margin-top:0.15rem;flex-shrink:0;">✓</button>
 <div style="flex:1;">
 <div style="font-weight:600;color:#dc2626;font-size:0.9rem;">${physName}${phoneLink}${emailLink}</div>
-<div style="font-size:0.75rem;color:#dc2626;font-weight:600;">Due: ${r.reminder_date} (OVERDUE) ${r.author ? '<span style="font-size:0.7rem;font-weight:700;padding:0.1rem 0.45rem;border-radius:10px;background:' + (r.author==='Tom' ? '#dbeafe' : '#f3e8ff') + ';color:' + (r.author==='Tom' ? '#1d4ed8' : '#7e22ce') + ';">' + r.author + '</span>' : ''}</div>
+<div style="font-size:0.75rem;color:#dc2626;font-weight:600;">Due: ${r.reminder_date} (OVERDUE) ${authorBadgeHtml(r.author)}</div>
 ${taskNote?`<div style="font-size:0.8rem;font-weight:600;color:#92400e;background:#fef3c7;padding:0.15rem 0.4rem;border-radius:4px;margin-top:0.2rem;">📋 ${taskNote}</div>`:''}
 <div style="font-size:0.8rem;color:#666;margin-top:0.2rem;">${preview}</div>
 </div>
@@ -492,7 +513,7 @@ html += `<div class="contact-entry" style="cursor:pointer;border-left-color:#f59
 <div style="font-weight:600;color:#1e3a8a;font-size:0.9rem;">${physName}${phoneLink}${emailLink}</div>
 ${taskNote?`<div style="font-size:0.8rem;font-weight:600;color:#92400e;background:#fef3c7;padding:0.15rem 0.4rem;border-radius:4px;margin-top:0.2rem;">📋 ${taskNote}</div>`:''}
 <div style="font-size:0.8rem;color:#666;margin-top:0.2rem;">${preview}</div>
-${r.author ? '<div style="margin-top:0.2rem;"><span style="font-size:0.7rem;font-weight:700;padding:0.1rem 0.45rem;border-radius:10px;background:' + (r.author==='Tom' ? '#dbeafe' : '#f3e8ff') + ';color:' + (r.author==='Tom' ? '#1d4ed8' : '#7e22ce') + ';">' + r.author + '</span></div>' : ''}
+${r.author ? '<div style="margin-top:0.2rem;">'+authorBadgeHtml(r.author)+'</div>' : ''}
 </div>
 </div>`;
 });
@@ -514,7 +535,7 @@ html += `<div class="contact-entry" style="cursor:pointer;border-left-color:#f59
 <div style="font-weight:600;color:#1e3a8a;font-size:0.9rem;">${physName}${phoneLink}${emailLink}</div>
 ${taskNote?`<div style="font-size:0.8rem;font-weight:600;color:#92400e;background:#fef3c7;padding:0.15rem 0.4rem;border-radius:4px;margin-top:0.2rem;">📋 ${taskNote}</div>`:''}
 <div style="font-size:0.8rem;color:#666;margin-top:0.2rem;">${preview}</div>
-${r.author ? '<div style="margin-top:0.2rem;"><span style="font-size:0.7rem;font-weight:700;padding:0.1rem 0.45rem;border-radius:10px;background:' + (r.author==='Tom' ? '#dbeafe' : '#f3e8ff') + ';color:' + (r.author==='Tom' ? '#1d4ed8' : '#7e22ce') + ';">' + r.author + '</span></div>' : ''}
+${r.author ? '<div style="margin-top:0.2rem;">'+authorBadgeHtml(r.author)+'</div>' : ''}
 </div></div>`;
 });
 html += '</div>';
