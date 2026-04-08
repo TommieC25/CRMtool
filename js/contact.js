@@ -167,7 +167,7 @@ if(!_savePhysician){
 const dateVal=$('contactDate').value,authorVal=$('authorName').value;
 const nv=($('contactNotes').value||'').trim();
 if(!dateVal){showToast('Please enter a date','error');return;}
-if(!authorVal){const _a=$('authorName');_a.style.border='2px solid #dc2626';_a.style.borderRadius='6px';setTimeout(()=>{_a.style.border='';},2500);_a.scrollIntoView({behavior:'smooth',block:'center'});showToast('Select your rep name — Tom or Travis','error');return;}
+if(!authorVal){const _a=$('authorName');_a.style.border='2px solid #dc2626';_a.style.borderRadius='6px';setTimeout(()=>{_a.style.border='';},2500);_a.scrollIntoView({behavior:'smooth',block:'center'});showToast('Please enter your name','error');return;}
 localStorage.setItem('lastCallLogAuthor',authorVal);
 if(!nv){showToast('Please enter note text','error');return;}
 const tv=$('contactTime').value;
@@ -522,7 +522,7 @@ if (!note) { showToast('Please enter a task note', 'error'); return; }
 const date = $('taskSelectedDate').value;
 if (!date) { showToast('Please select a due date', 'error'); return; }
 const authorVal = ($('addTaskAuthor')?.value || '').trim();
-if (!authorVal) { const _a=$('addTaskAuthor');if(_a){_a.style.border='2px solid #dc2626';_a.style.borderRadius='8px';setTimeout(()=>{_a.style.border='';},2500);_a.scrollIntoView({behavior:'smooth',block:'center'});}showToast('Select your rep name — Tom or Travis','error');return; }
+if (!authorVal) { const _a=$('addTaskAuthor');if(_a){_a.style.border='2px solid #dc2626';_a.style.borderRadius='8px';setTimeout(()=>{_a.style.border='';},2500);_a.scrollIntoView({behavior:'smooth',block:'center'});}showToast('Please enter your name','error');return; }
 const editId = ($('addTaskEditId')?.value) || null;
 const physicianId = $('addTaskPhysicianId').value || null;
 // When in global mode the location comes from the visible select; otherwise use the hidden field

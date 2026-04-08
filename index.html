@@ -22,6 +22,18 @@
 </style>
 </head>
 <body>
+<style>
+.demo-banner{position:fixed;top:0;left:0;right:0;z-index:250;background:#1e3a8a;color:rgba(255,255,255,0.9);font-size:0.72rem;text-align:center;padding:0.3rem 1rem;letter-spacing:0.3px;}
+.demo-banner a{color:#93c5fd;text-decoration:underline;cursor:pointer;}
+body{padding-top:24px;}
+#namePromptModal .modal-content{max-width:360px;}
+#namePromptModal .modal-body{padding:1.5rem;}
+#namePromptModal h3{color:#1e3a8a;margin-bottom:0.5rem;font-size:1.1rem;}
+#namePromptModal p{color:#666;font-size:0.85rem;margin-bottom:1rem;}
+#namePromptInput{width:100%;padding:0.875rem;border:2px solid #dbeafe;border-radius:8px;font-size:1rem;font-family:inherit;margin-bottom:1rem;}
+#namePromptInput:focus{outline:none;border-color:#1e3a8a;}
+</style>
+<div class="demo-banner">🎯 Demo environment — data is shared with all visitors · <a onclick="toggleAdminPanel();closeSidebar();">Reset in Admin Settings</a></div>
 <div id="sidebarOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:45;" onclick="closeSidebar()"></div>
 <div id="connectionStatus" class="connection-status hidden">Connecting...</div>
 <div id="toastContainer" class="toast-container"></div>
@@ -42,6 +54,7 @@
 <button class="admin-btn" onclick="setView('map')" style="background:#0ea5e9;border-color:#0ea5e9;">🗺️ Map</button>
 <button class="admin-btn" onclick="setView('tasks')" style="background:#7c3aed;border-color:#7c3aed;">✅ Tasks</button>
 <button class="admin-btn" onclick="toggleAdminPanel()">Admin Settings</button>
+<a href="mailto:tom@dynamicoach.com?subject=CRM Demo — Request Full Demo" style="display:block;text-align:center;padding:0.4rem 0.75rem;background:#f97316;border:none;border-radius:6px;color:white;font-size:0.75rem;font-weight:600;text-decoration:none;margin-top:0.25rem;">📧 Request Full Demo</a>
 <div class="admin-panel" id="adminPanel">
 <h4>Database Management</h4>
 <p style="color:#aaa;font-size:0.8rem;margin-bottom:0.75rem;">Add new records to the existing database, or manage all data.</p>
@@ -62,7 +75,8 @@ Append New Records from CSV <input type="file" accept=".csv" onchange="importCSV
 <div id="syncSheetStatus" style="font-size:0.75rem;color:#aaa;min-height:1rem;margin-bottom:0.35rem;"></div>
 <div style="font-size:0.7rem;color:#888;margin-bottom:0.2rem;">Web app URL (paste once after deploying Apps Script):</div>
 <input id="sheetSyncUrl" type="url" placeholder="https://script.google.com/macros/s/…/exec" style="width:100%;padding:0.4rem 0.6rem;background:#2a2a3e;color:#ccc;border:1px solid #444;border-radius:6px;font-size:0.72rem;font-family:monospace;margin-bottom:0.25rem;box-sizing:border-box;" oninput="localStorage.setItem('sheetSyncUrl',this.value.trim())">
-<button class="btn-danger" onclick="clearDatabase()" style="margin-top:1rem;">Clear All Data</button>
+<button style="background:#10b981;color:white;border:none;padding:0.6rem 1rem;border-radius:6px;font-size:0.85rem;cursor:pointer;width:100%;font-weight:600;margin-top:1rem;" onclick="resetDemoData()">🔄 Reset Demo Data</button>
+<button class="btn-danger" onclick="clearDatabase()" style="margin-top:0.5rem;">Clear All Data</button>
 <h4 style="margin-top:1rem;color:#a78bfa;">🛠️ DB Tools</h4>
 <div style="display:flex;flex-direction:column;gap:0.4rem;margin-top:0.25rem;">
 <a href="db_audit.html" target="_blank" style="display:block;background:#7c3aed;color:white;padding:0.6rem 1rem;border-radius:6px;font-size:0.85rem;font-weight:600;text-align:center;text-decoration:none;">🔍 DB Audit</a>
@@ -394,7 +408,7 @@ Append New Records from CSV <input type="file" accept=".csv" onchange="importCSV
 <div class="form-row">
 <div>
 <label>Your Name *</label>
-<select id="authorName" style="width:100%;padding:0.6rem 0.5rem;font-size:0.9rem;border:1px solid #e5e5e5;border-radius:6px;font-family:inherit;"><option value="">— select —</option><option value="Tom">Tom</option><option value="Travis">Travis</option></select>
+<input type="text" id="authorName" placeholder="Your name" style="width:100%;padding:0.6rem 0.5rem;font-size:0.9rem;border:1px solid #e5e5e5;border-radius:6px;font-family:inherit;">
 </div>
 <div>
 <label>Date *</label>
@@ -671,12 +685,23 @@ Add Follow-Up Task after saving
 </div>
 <div style="margin-bottom:1rem;">
 <label>Your Name *</label>
-<select id="addTaskAuthor" required style="width:100%;padding:0.75rem 0.5rem;font-size:0.9rem;border:2px solid #e5e5e5;border-radius:8px;font-family:inherit;"><option value="">— select —</option><option value="Tom">Tom</option><option value="Travis">Travis</option></select>
+<input type="text" id="addTaskAuthor" placeholder="Your name" style="width:100%;padding:0.75rem 0.5rem;font-size:0.9rem;border:2px solid #e5e5e5;border-radius:8px;font-family:inherit;">
 </div>
 <input type="hidden" id="addTaskPhysicianId" value="">
 <input type="hidden" id="addTaskLocationId" value="">
 <input type="hidden" id="addTaskEditId" value="">
 <button type="button" id="addTaskSaveBtn" class="btn-primary" onclick="saveNewTask()">Save Task</button>
+</div>
+</div>
+</div>
+<!-- Name prompt modal -->
+<div class="modal active" id="namePromptModal">
+<div class="modal-content">
+<div class="modal-body">
+<h3>Welcome to CRM Demo</h3>
+<p>Enter your name so your activity notes are attributed correctly. This is saved on your device.</p>
+<input type="text" id="namePromptInput" placeholder="e.g. Jane Smith" maxlength="40" autocomplete="name">
+<button class="btn-primary" onclick="saveUserName()">Start Exploring →</button>
 </div>
 </div>
 </div>

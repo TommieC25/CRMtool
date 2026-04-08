@@ -171,6 +171,35 @@ const PROVIDERS = [
   ['Agnes',      'Rivera',     'MD',  'Dermatology', 2, '19', true,  'Precision Mohs & Skin Surgery'],
 ];
 
+// ── Contact logs: [first, last, date, author, notes, reminder_date_or_null] ──
+const CONTACT_LOGS = [
+  ['William',    'Harris',    '2026-03-15', 'Tom C.',   'Visit: Met with Dr. Harris re: new tissue matrix product line. Very receptive — requested samples for 3 patients.', null],
+  ['Elizabeth',  'Clark',     '2026-03-20', 'Sarah M.', 'Call: Follow-up on samples sent last week. She trialed on 2 patients — positive outcomes on both cases.', null],
+  ['Richard',    'Lewis',     '2026-02-28', 'Tom C.',   'Visit: Detailed advanced wound care protocol. Dr. Lewis sees ~12 wound patients/week. High volume potential.', null],
+  ['Joseph',     'Allen',     '2026-03-25', 'Tom C.',   'Visit: Lunch with Dr. Allen and staff. Placing first order next week. Strong close.', null],
+  ['Christopher','Scott',     '2026-04-01', 'Sarah M.', 'Call: Post-order check-in. 5 units used, all successful closures. Requesting peer-reviewed clinical data.', null],
+  ['Edward',     'Carter',    '2026-03-10', 'Tom C.',   'Visit: In-service for 4 wound care nurses. Dr. Carter enthusiastic about protocol. Full staff trained.', null],
+  ['Paul',       'Campbell',  '2026-03-18', 'Sarah M.', 'Email: Sent product overview and reimbursement guide per request. Awaiting follow-up call.', null],
+  ['Ruth',       'Robinson',  '2026-04-03', 'Tom C.',   'Visit: First meeting — receptionist booked 15-min intro. Very good first impression, asked for samples.', null],
+  ['Marcus',     'Chen',      '2026-03-12', 'Tom C.',   'Visit: Dr. Chen currently using competitor product. Reviewed clinical comparison data. Open to trial on next 3 DFU cases.', null],
+  ['Angela',     'Torres',    '2026-03-22', 'Tom C.',   'Visit: Best call of the week. Dr. Torres treats 30+ DFU patients/month. Wants full product demo at next visit.', null],
+  ['Christopher','Lee',       '2026-03-08', 'Tom C.',   'Visit: Staff in-service on application technique. Dr. Lee placed order for 10 units on the spot.', null],
+  ['Rebecca',    'Thompson',  '2026-03-30', 'Tom C.',   'Visit: Quarterly review. Volume up 40% vs last quarter. Top-performing provider this period.', null],
+  ['James',      'Rodriguez', '2026-02-25', 'Sarah M.', 'Call: Dr. Rodriguez asked about the new SKU. Sent spec sheet by email. Will follow up next week.', null],
+  ['Sarah',      'Mitchell',  '2026-03-17', 'Tom C.',   'Visit: Met at Lakewood office. Two new DFU cases starting treatment next week. Optimistic about outcome.', null],
+  ['David',      'Kim',       '2026-03-05', 'Sarah M.', 'Visit: Intro meeting. Dr. Kim sees mostly nail/sports cases — referred us to DFU-focused partner Dr. Park.', null],
+  ['Raymond',    'Stone',     '2026-03-05', 'Tom C.',   'Visit: Dr. Stone performs 15-20 Mohs cases/week — highest volume in territory. Very interested in post-Mohs wound management protocol.', null],
+  ['Diane',      'Collins',   '2026-03-19', 'Tom C.',   'Visit: Detailed product for post-Mohs closures. Dr. Collins wants to pilot on complex reconstructions.', null],
+  ['Frances',    'Cox',       '2026-04-02', 'Tom C.',   'Call: Following up on pilot cases. 3 patients treated, all healing ahead of expected schedule. Excellent result.', null],
+  ['Carol',      'Morris',    '2026-03-26', 'Sarah M.', 'Visit: In-service with Mohs surgery team. Strong buy-in from both surgeons and nursing staff.', null],
+  ['Eugene',     'Bailey',    '2026-04-04', 'Tom C.',   'Visit: Dr. Bailey is the go-to Mohs surgeon in the region. First order placed. Huge win for Q2.', null],
+  ['Helen',      'Adams',     '2026-03-28', 'Sarah M.', 'Visit: Left product samples. Dr. Adams will trial on 2 patients this week. Reminder set for results check-in.', '2026-04-22'],
+  ['Gregory',    'Reed',      '2026-03-31', 'Tom C.',   'Visit: First meeting. Dr. Reed has busy Mohs practice, very engaged. Needs 2nd visit with clinical data.', '2026-04-25'],
+  ['Linda',      'Park',      '2026-03-20', 'Sarah M.', 'Call: Dr. Park interested but waiting on prior auth approval for first case. Follow up in 2 weeks.', '2026-04-28'],
+  ['Angela',     'Torres',    '2026-04-03', 'Tom C.',   'Visit: Full product demonstration complete. Awaiting formulary committee approval. Strong internal advocate.', '2026-05-05'],
+  ['Michelle',   'Santos',    '2026-04-05', 'Sarah M.', 'Call: Dr. Santos requested meeting to discuss high-volume contract pricing. Schedule lunch this month.', '2026-05-12'],
+];
+
 async function runSeed() {
   logClear();
   const btn = document.getElementById('seedBtn');
@@ -235,6 +264,24 @@ async function runSeed() {
       log(`  ✓ ${first_name} ${last_name}, ${degree} — ${specialty} (Tier ${priority})`, 'ok');
     }
 
+    // ── Step 5: Insert contact logs ───────────────────────────────────────────
+    log('\n── Step 5: Seeding contact history ──', 'hdr');
+    // Build provider name → id map
+    const { data: allProvs } = await db.from('providers').select('id, first_name, last_name');
+    const provIdMap = {};
+    (allProvs || []).forEach(p => { provIdMap[`${p.first_name}|${p.last_name}`] = p.id; });
+    let logCount = 0;
+    for (const [first, last, contact_date, author, notes, reminder_date] of CONTACT_LOGS) {
+      const provider_id = provIdMap[`${first}|${last}`];
+      if (!provider_id) { log(`  SKIP log for ${first} ${last} — not found`, 'warn'); continue; }
+      const entry = { provider_id, contact_date, author, notes };
+      if (reminder_date) entry.reminder_date = reminder_date;
+      const { error } = await db.from('contact_logs').insert(entry);
+      if (error) { log(`  ERR log ${first} ${last}: ${error.message}`, 'err'); continue; }
+      logCount++;
+      log(`  ✓ ${first} ${last} — ${contact_date}${reminder_date ? ' (reminder '+reminder_date+')' : ''}`, 'ok');
+    }
+
     // ── Done ─────────────────────────────────────────────────────────────────
     log('\n── Complete ──', 'hdr');
     log(`  Practices:    ${PRACTICES.length}`, 'ok');
@@ -243,7 +290,14 @@ async function runSeed() {
     log(`    Podiatry:     ${podCount}`, 'ok');
     log(`    Wound Care:   ${wcCount}`, 'ok');
     log(`    Dermatology:  ${dermCount} (Mohs only)`, 'ok');
-    log('\nOpen index.html to verify data in the CRM.', 'hdr');
+    log(`  Contact logs: ${logCount} (incl. ${CONTACT_LOGS.filter(l=>l[5]).length} reminders)`, 'ok');
+    const autoRedirect = new URLSearchParams(window.location.search).get('autorun') === 'true';
+    if (autoRedirect) {
+      log('\nReturning to CRM in 3 seconds…', 'hdr');
+      setTimeout(() => window.location.href = '/CRMtool/', 3000);
+    } else {
+      log('\nOpen index.html to verify data in the CRM.', 'hdr');
+    }
 
   } catch (e) {
     log(`\nFATAL: ${e.message}`, 'err');
@@ -252,8 +306,18 @@ async function runSeed() {
   }
 }
 
-async function clearAll() {
-  if (!confirm('Delete ALL demo data? This cannot be undone.')) return;
+// Auto-run if ?autorun=true (triggered by Reset Demo button in the app)
+window.addEventListener('load', async () => {
+  if (new URLSearchParams(window.location.search).get('autorun') === 'true') {
+    document.getElementById('seedBtn').disabled = true;
+    log('Auto-reset triggered from CRM…\n', 'hdr');
+    await clearAll(true);
+    await runSeed();
+  }
+});
+
+async function clearAll(silent = false) {
+  if (!silent && !confirm('Delete ALL demo data? This cannot be undone.')) return;
   logClear();
   log('Clearing all tables...', 'warn');
   const dummy = '00000000-0000-0000-0000-000000000000';

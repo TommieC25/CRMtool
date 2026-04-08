@@ -31,6 +31,7 @@ let cachedLatestActivity = {};
 
 document.addEventListener('DOMContentLoaded', async () => {
 setToday();
+initDemoUserName();
 await loadAllData();
 setupRealtimeSubscription();
 initCallLogInterceptor();
@@ -92,6 +93,41 @@ $('quickPhysSpecialty').addEventListener('change', function() {
 if (this.value === 'Podiatry' && !$('quickPhysDegree').value) $('quickPhysDegree').value = 'DPM';
 });
 });
+
+// ── Demo: user name prompt ────────────────────────────────────────────────────
+function saveUserName() {
+  const val = ($('namePromptInput').value || '').trim();
+  if (!val) { $('namePromptInput').style.border = '2px solid #dc2626'; return; }
+  localStorage.setItem('lastCallLogAuthor', val);
+  $('namePromptModal').classList.remove('active');
+}
+function initDemoUserName() {
+  const saved = localStorage.getItem('lastCallLogAuthor');
+  if (saved) {
+    $('namePromptModal').classList.remove('active');
+  } else {
+    $('namePromptModal').classList.add('active');
+    setTimeout(() => $('namePromptInput').focus(), 300);
+  }
+  // Pre-fill both author inputs whenever they're empty
+  const fill = () => {
+    const n = localStorage.getItem('lastCallLogAuthor') || '';
+    if ($('authorName') && !$('authorName').value) $('authorName').value = n;
+    if ($('addTaskAuthor') && !$('addTaskAuthor').value) $('addTaskAuthor').value = n;
+  };
+  document.addEventListener('click', fill);
+  fill();
+}
+// Enter key submits name prompt
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && $('namePromptModal')?.classList.contains('active')) saveUserName();
+});
+
+// ── Demo: reset all data and re-seed ─────────────────────────────────────────
+async function resetDemoData() {
+  if (!confirm('Reset demo to original 50 providers? This clears all activity logs and contact notes.')) return;
+  window.location.href = '/CRMtool/demo-seed.html?autorun=true';
+}
 
 // Returns YYYY-MM-DD in the user's LOCAL timezone (not UTC)
 function localDate(d) { const dt=d||new Date(); return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0'); }
