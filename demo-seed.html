@@ -63,54 +63,55 @@ const PRACTICES = [
 ];
 
 // key: practice name → array of location records
+// Denver metro — real city/ZIP combos so Nominatim geocodes accurately
 const LOCATIONS = {
   'Coastal Podiatry Associates': [
-    { label: 'Riverside Office',  address: '1245 Harbor Blvd',        city: 'Riverside',   zip: '62701', phone: '555-310-4400' },
-    { label: 'Lakewood Office',   address: '890 Oak St #200',          city: 'Lakewood',    zip: '62702', phone: '555-310-4401' },
+    { label: 'Denver Office',         address: '1245 17th St',              city: 'Denver',           zip: '80202', phone: '555-310-4400' },
+    { label: 'Aurora Office',         address: '890 Sable Blvd #200',       city: 'Aurora',           zip: '80011', phone: '555-310-4401' },
   ],
   'Metro Foot & Ankle Clinic': [
-    { label: 'Main Clinic',       address: '321 Commerce Dr',          city: 'Springfield', zip: '62703', phone: '555-217-5500' },
+    { label: 'South Broadway Clinic', address: '321 S Broadway',            city: 'Denver',           zip: '80209', phone: '555-217-5500' },
   ],
   'Summit Podiatry Group': [
-    { label: 'Hillcrest Office',  address: '555 Alpine Way #300',      city: 'Hillcrest',   zip: '62704', phone: '555-418-6600' },
+    { label: 'Boulder Office',        address: '555 Arapahoe Ave #300',     city: 'Boulder',          zip: '80302', phone: '555-418-6600' },
   ],
   'Northside Podiatry Center': [
-    { label: 'Northfield Main',   address: '789 North Ave',            city: 'Northfield',  zip: '62705', phone: '555-515-7700' },
-    { label: 'Centerville Office',address: '100 Elm Ct #105',          city: 'Centerville', zip: '62706', phone: '555-515-7701' },
+    { label: 'Westminster Main',      address: '789 Sheridan Blvd',         city: 'Westminster',      zip: '80003', phone: '555-515-7700' },
+    { label: 'Broomfield Office',     address: '100 Interlocken Blvd #105', city: 'Broomfield',       zip: '80021', phone: '555-515-7701' },
   ],
   'Eastside Foot Care': [
-    { label: 'Eastview Clinic',   address: '444 East Main St',         city: 'Eastview',    zip: '62707', phone: '555-619-8800' },
+    { label: 'Aurora Clinic',         address: '444 S Havana St',           city: 'Aurora',           zip: '80012', phone: '555-619-8800' },
   ],
   'Advanced Wound Care Center': [
-    { label: 'Bayside Main',      address: '2100 Medical Pkwy',        city: 'Bayside',     zip: '62708', phone: '555-720-9900' },
-    { label: 'Westport Office',   address: '3300 Health Plaza #400',   city: 'Westport',    zip: '62709', phone: '555-720-9901' },
+    { label: 'Lakewood Main',         address: '2100 S Wadsworth Blvd',     city: 'Lakewood',         zip: '80227', phone: '555-720-9900' },
+    { label: 'Englewood Office',      address: '3300 S Broadway #400',      city: 'Englewood',        zip: '80113', phone: '555-720-9901' },
   ],
   'Healing Horizons Wound Care': [
-    { label: 'Glendale Center',   address: '678 Wellness Dr',          city: 'Glendale',    zip: '62710', phone: '555-815-1100' },
+    { label: 'Thornton Center',       address: '678 E 84th Ave',            city: 'Thornton',         zip: '80229', phone: '555-815-1100' },
   ],
   'Regional Wound Management': [
-    { label: 'Maplewood Clinic',  address: '900 Clinical Blvd',        city: 'Maplewood',   zip: '62711', phone: '555-916-2200' },
+    { label: 'Arvada Clinic',         address: '9195 Wadsworth Pkwy',       city: 'Arvada',           zip: '80003', phone: '555-916-2200' },
   ],
   'Bayside Wound Care Institute': [
-    { label: 'Fairview Office',   address: '1500 Bay Ave #500',        city: 'Fairview',    zip: '62712', phone: '555-312-3300' },
+    { label: 'Centennial Office',     address: '1500 E Arapahoe Rd #500',   city: 'Centennial',       zip: '80122', phone: '555-312-3300' },
   ],
   'Central Valley Wound Specialists': [
-    { label: 'Oakdale Center',    address: '250 Valley Rd',            city: 'Oakdale',     zip: '62713', phone: '555-413-4400' },
+    { label: 'Littleton Center',      address: '250 W Mineral Ave',         city: 'Littleton',        zip: '80120', phone: '555-413-4400' },
   ],
   'Dermatologic Surgery of the Valley': [
-    { label: 'Pinecrest Surgical',address: '1800 Surgical Ct',         city: 'Pinecrest',   zip: '62714', phone: '555-514-5500' },
+    { label: 'Greenwood Village',     address: '1800 E Orchard Rd',         city: 'Greenwood Village',zip: '80111', phone: '555-514-5500' },
   ],
   'Precision Mohs & Skin Surgery': [
-    { label: 'Clearwater Suite',  address: '2200 Dermatology Way #100',city: 'Clearwater',  zip: '62715', phone: '555-610-6600' },
+    { label: 'Parker Suite',          address: '2200 Stroh Rd #100',        city: 'Parker',           zip: '80138', phone: '555-610-6600' },
   ],
   'Pacific Dermatologic Surgery': [
-    { label: 'Riverside Office',  address: '3000 Pacific Blvd',        city: 'Riverside',   zip: '62701', phone: '555-311-7700' },
+    { label: 'North Westminster',     address: '3000 W 144th Ave',          city: 'Westminster',      zip: '80023', phone: '555-311-7700' },
   ],
   'Modern Mohs Surgery Center': [
-    { label: 'Springfield Main',  address: '440 Modern Medical Dr',    city: 'Springfield', zip: '62703', phone: '555-217-8800' },
+    { label: 'Castle Rock Office',    address: '440 S Wilcox St',           city: 'Castle Rock',      zip: '80104', phone: '555-217-8800' },
   ],
   'Riverside Medical Group': [
-    { label: 'Lakewood Office',   address: '1100 Riverside Ave',       city: 'Lakewood',    zip: '62702', phone: '555-312-9900' },
+    { label: 'Highlands Ranch',       address: '1100 Wildcat Reserve Pkwy', city: 'Highlands Ranch',  zip: '80126', phone: '555-312-9900' },
   ],
 };
 

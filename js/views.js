@@ -53,7 +53,7 @@ function downloadTaskICS(r, phys, loc, practice, timeVal) {
   const name = phys ? fmtName(phys) : (practice ? practice.name : (loc ? (loc.label || 'Office') : 'Task'));
   const ds = r.reminder_date.replace(/-/g, '');
   let location = '';
-  if (loc) { const parts = [loc.address, loc.city, loc.zip ? 'FL ' + loc.zip : 'FL'].filter(Boolean); location = parts.join(', '); }
+  if (loc) { const parts = [loc.address, loc.city, loc.zip ? loc.zip : loc.city || ''].filter(Boolean); location = parts.join(', '); }
   const uid = 'woundcare-' + (r.id || Date.now()) + '@woundcarecrm';
   const stamp = new Date().toISOString().replace(/[-:.]/g,'').slice(0,15) + 'Z';
   let dtStart,dtEnd;if(timeVal){const[hh,mm]=timeVal.split(':');const dEnd=new Date(r.reminder_date+'T'+timeVal+':00');dEnd.setHours(dEnd.getHours()+1);const endStr=r.reminder_date.replace(/-/g,'')+`T${String(dEnd.getHours()).padStart(2,'0')}${String(dEnd.getMinutes()).padStart(2,'0')}00`;dtStart='DTSTART;TZID=America/New_York:'+ds+'T'+hh+mm+'00';dtEnd='DTEND;TZID=America/New_York:'+endStr;}else{const dsNext=(()=>{const d=new Date(r.reminder_date+'T12:00:00');d.setDate(d.getDate()+1);return d.toISOString().slice(0,10).replace(/-/g,'');})();dtStart='DTSTART;VALUE=DATE:'+ds;dtEnd='DTEND;VALUE=DATE:'+dsNext;}
@@ -69,7 +69,7 @@ function buildGoogleCalendarUrl(r, phys, loc, practice, timeVal) {
   const name = phys ? fmtName(phys) : (practice ? practice.name : (loc ? (loc.label || 'Office') : 'Task'));
   const ds = r.reminder_date.replace(/-/g, '');
   let location = '';
-  if (loc) { const cityState = [loc.city, loc.zip ? 'FL ' + loc.zip : 'FL'].filter(Boolean).join(', '); const lp = [loc.address, cityState].filter(Boolean); location = lp.join(', '); }
+  if (loc) { const cityState = [loc.city, loc.zip ? loc.zip : loc.city || ''].filter(Boolean).join(', '); const lp = [loc.address, cityState].filter(Boolean); location = lp.join(', '); }
   let calDates;if(timeVal){const[hh,mm]=timeVal.split(':');const dEnd=new Date(r.reminder_date+'T'+timeVal+':00');dEnd.setHours(dEnd.getHours()+1);const endStr=r.reminder_date.replace(/-/g,'')+`T${String(dEnd.getHours()).padStart(2,'0')}${String(dEnd.getMinutes()).padStart(2,'0')}00`;calDates=ds+'T'+hh+mm+'00/'+endStr;}else{const dsNext=(()=>{const d=new Date(r.reminder_date+'T12:00:00');d.setDate(d.getDate()+1);return d.toISOString().slice(0,10).replace(/-/g,'');})();calDates=ds+'/'+dsNext;}
   const params = new URLSearchParams({ action:'TEMPLATE', text: name, dates:calDates, location, ctz:'America/New_York' });
   return 'https://calendar.google.com/calendar/render?' + params.toString();
@@ -474,7 +474,7 @@ $('physicianCount').textContent='Territory Dashboard';
 // --- Map view ---
 let territoryMap=null;
 const geocodeCache=(function(){try{const c=JSON.parse(localStorage.getItem('geocodeCache')||'{}');// v3: wipe zip-only cache entries so they re-geocode with full address strategy
-const v=localStorage.getItem('geocodeCacheV')||'1';if(v!=='3'){localStorage.removeItem('geocodeCache');localStorage.setItem('geocodeCacheV','3');return {};}return c;}catch(e){return {};}})();
+const v=localStorage.getItem('geocodeCacheV')||'1';if(v!=='4'){localStorage.removeItem('geocodeCache');localStorage.setItem('geocodeCacheV','4');return {};}return c;}catch(e){return {};}})();
 function saveGeocodeCache(){try{localStorage.setItem('geocodeCache',JSON.stringify(geocodeCache));}catch(e){}}
 let territoryMapCache=null;
 let _mapBuiltMarkers=[]; // module-level so locateOnMap() always has access even mid-geocoding
@@ -494,7 +494,7 @@ const search=($('searchInput').value||'').toLowerCase().trim();
 $('mainContent').innerHTML='<div style="height:calc(100vh - 2rem);"><div id="mapContainer" style="height:100%;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1);"></div></div>';
 if(territoryMap){territoryMap.remove();territoryMap=null;}
 _mapBuiltMarkers=[];
-territoryMap=L.map('mapContainer',{tap:false}).setView([25.76,-80.19],11);
+territoryMap=L.map('mapContainer',{tap:false}).setView([39.65,-104.95],10);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors',maxZoom:19}).addTo(territoryMap);
 setTimeout(()=>{if(territoryMap)territoryMap.invalidateSize();},200);
 const LocBtn=L.Control.extend({options:{position:'topright'},onAdd:function(){const b=L.DomUtil.create('button');b.innerHTML='📍 My Location';b.style.cssText='background:white;border:2px solid #1e3a8a;color:#1e3a8a;padding:0.5rem 0.75rem;border-radius:8px;font-size:0.85rem;font-weight:600;cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,0.2);white-space:nowrap;';L.DomEvent.on(b,'click',L.DomEvent.stopPropagation);L.DomEvent.on(b,'click',locateOnMap);return b;}});new LocBtn().addTo(territoryMap);
@@ -537,13 +537,13 @@ statusEl.textContent='No locations with address data — check DB';
 $('physicianCount').textContent=search?'Map: "'+search+'" (0 locations)':'Territory Map (0 locations — no address data)';
 return;
 }
-const uncachedCount=locs.filter(l=>!geocodeCache[l.address+', '+l.city+', FL '+(l.zip||'')]).length;
+const uncachedCount=locs.filter(l=>!geocodeCache[l.address+', '+l.city+(l.zip?', '+l.zip:'')]).length;
 statusEl.textContent=uncachedCount?'Geocoding '+uncachedCount+' new locations… ('+locs.length+' total)':'Loading '+locs.length+' locations…';
 $('physicianCount').textContent='Territory Map (loading '+locs.length+'…)';
 const bounds=[];
 let plotted=0,failed=0;
 for(const loc of locs){
-const addr=loc.address+', '+loc.city+', FL '+(loc.zip||'');
+const addr=loc.address+', '+loc.city+(loc.zip?', '+loc.zip:'');
 const practiceName=loc.practices?.name||practices.find(p=>p.id===loc.practice_id)?.name||'';
 const assignedPhys=physicians.filter(p=>(physicianAssignments[p.id]||[]).some(a=>a.practice_location_id===loc.id));
 try{
@@ -552,11 +552,11 @@ if(!coords){
 let d=null;
 if(loc.address&&(loc.city||loc.zip)){
 const baseStreet=(loc.address||'').replace(/\s*(#\S+|ste\.?\s*\S+|suite\s*\S+|unit\s*\S+|apt\.?\s*\S+)$/i,'').trim();
-const r=await fetch('https://nominatim.openstreetmap.org/search?format=json&street='+encodeURIComponent(baseStreet)+'&city='+encodeURIComponent(loc.city||'')+'&state=FL&postalcode='+encodeURIComponent(loc.zip||'')+'&countrycodes=us&limit=1');
+const r=await fetch('https://nominatim.openstreetmap.org/search?format=json&street='+encodeURIComponent(baseStreet)+'&city='+encodeURIComponent(loc.city||'')+'&postalcode='+encodeURIComponent(loc.zip||'')+'&countrycodes=us&limit=1');
 d=await r.json();
 }
 if(!d||!d[0]){
-const zipQuery=(loc.zip?loc.zip+', FL':(loc.city||'')+', FL').trim();
+const zipQuery=(loc.zip?loc.zip:(loc.city||'')).trim();
 const r2=await fetch('https://nominatim.openstreetmap.org/search?format=json&q='+encodeURIComponent(zipQuery)+'&countrycodes=us&limit=1');
 d=await r2.json();
 }
