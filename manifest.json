@@ -1,0 +1,10 @@
+{
+  "name": "CRM Demo",
+  "short_name": "CRM Demo",
+  "start_url": "/FieldCRM-Demo/",
+  "scope": "/FieldCRM-Demo/",
+  "display": "standalone",
+  "background_color": "#1e3a8a",
+  "theme_color": "#1e3a8a",
+  "orientation": "any"
+}

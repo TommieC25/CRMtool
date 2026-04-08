@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com; connect-src 'self' https://kpozqhksfynpfsrbroih.supabase.co wss://kpozqhksfynpfsrbroih.supabase.co https://nominatim.openstreetmap.org https://*.tile.openstreetmap.org; img-src 'self' data: https://*.tile.openstreetmap.org; font-src 'self' data:; base-uri 'self'; form-action 'self';">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+ <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+ <meta http-equiv="Pragma" content="no-cache">
+ <meta http-equiv="Expires" content="0">
+ <meta name="apple-mobile-web-app-capable" content="yes">
+ <meta name="apple-mobile-web-app-status-bar-style" content="black">
+ <meta name="apple-mobile-web-app-title" content="CRM Demo">
+ <link rel="manifest" href="manifest.json">
+ <title>CRM Demo</title>
+ <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+ <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+ <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+ <!-- SECTION: CSS-STYLES (all inline styles, responsive breakpoints, component classes) -->
+<style>
+
+*{margin:0;padding:0;box-sizing:border-box}input[type="checkbox"]{-webkit-appearance:none;-moz-appearance:none;appearance:none;width:20px;height:20px;min-width:20px;border:2px solid #1e3a8a;border-radius:4px;background:white;cursor:pointer;position:relative;flex-shrink:0;margin:0;transition:all 0.15s}input[type="checkbox"]:checked{background:#1e3a8a;border-color:#1e3a8a}input[type="checkbox"]:checked::after{content:'\2713';position:absolute;color:white;font-size:14px;font-weight:bold;top:50%;left:50%;transform:translate(-50%,-50%)}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f5;-webkit-font-smoothing:antialiased;overflow-x:hidden}.app{display:flex;height:100vh}.connection-status{position:fixed;top:0;left:0;right:0;padding:0.5rem;text-align:center;font-size:0.75rem;font-weight:600;z-index:200;transition:all 0.3s}.connection-status.connected{background:#10b981;color:white}.connection-status.disconnected{background:#ef4444;color:white}.connection-status.syncing{background:#f59e0b;color:white}.connection-status.hidden{transform:translateY(-100%)}.mobile-header{display:none;background:#1e3a8a;color:white;padding:1rem;align-items:center;gap:1rem;position:sticky;top:0;z-index:60;box-shadow:0 2px 4px rgba(0,0,0,0.1)}.mobile-header h1{flex:1;font-size:1.25rem;font-weight:600}.menu-btn,.add-header-btn{background:none;border:none;color:white;font-size:1.5rem;cursor:pointer;padding:0.5rem;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}.sidebar{width:300px;background:#1e3a8a;color:white;display:flex;flex-direction:column;overflow-y:auto;transition:transform 0.3s}.sidebar-header{padding:1.5rem;border-bottom:1px solid rgba(255,255,255,0.1)}.sidebar-header h1{font-size:1.5rem;font-weight:700;margin-bottom:0.25rem}.sidebar-header .subtitle{font-size:0.75rem;opacity:0.7;text-transform:uppercase;letter-spacing:1px}.sidebar-header .count{font-size:0.85rem;margin-top:0.5rem;opacity:0.8}.search-box{padding:0.75rem 1rem;border-bottom:1px solid rgba(255,255,255,0.1)}.search-wrapper{position:relative;display:flex;align-items:center}.search-input{width:100%;padding:0.75rem;padding-right:2.5rem;border:none;border-radius:8px;background:rgba(255,255,255,0.1);color:white;font-size:0.9rem}.search-input::placeholder{color:rgba(255,255,255,0.5)}.search-input:focus{outline:none;background:rgba(255,255,255,0.15)}.search-clear{position:absolute;right:0.35rem;background:rgba(255,255,255,0.3);border:none;color:white;font-size:1.1rem;cursor:pointer;width:36px;height:36px;min-width:36px;min-height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;padding:0;line-height:1;-webkit-tap-highlight-color:transparent;touch-action:manipulation;z-index:2}.sort-controls{padding:0.5rem 1rem;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;gap:0.5rem;flex-wrap:wrap}.sort-btn{padding:0.4rem 0.75rem;background:rgba(255,255,255,0.1);border:none;border-radius:6px;color:white;font-size:0.75rem;cursor:pointer;transition:all 0.2s}.sort-btn:hover{background:rgba(255,255,255,0.2)}.sort-btn.active{background:#f97316}.physician-list{flex:1;padding:0.5rem;list-style:none;overflow-y:auto}.physician-item{padding:0.875rem;margin-bottom:0.5rem;background:rgba(255,255,255,0.1);border-radius:8px;cursor:pointer;transition:all 0.2s;border-left:3px solid transparent;-webkit-tap-highlight-color:transparent}.physician-item:active{transform:scale(0.98)}.physician-item.active{background:rgba(255,255,255,0.2);border-left-color:#f97316}.physician-item .name{font-weight:600;font-size:0.9rem;margin-bottom:0.25rem}.physician-item .practice{font-size:0.75rem;opacity:0.8}.physician-item .tier{font-size:0.78rem;font-weight:700;margin-top:0.25rem;padding:0.2rem 0.6rem;background:transparent;border-radius:4px;display:inline-block}.physician-item .city-badge{font-size:0.65rem;margin-left:0.25rem;padding:0.125rem 0.5rem;background:rgba(255,255,255,0.2);border-radius:4px;display:inline-block}.add-physician-btn{margin:1rem;padding:1rem;background:#f97316;color:white;border:none;border-radius:8px;font-weight:600;font-size:1rem;cursor:pointer;-webkit-tap-highlight-color:transparent}.add-physician-btn:active{transform:scale(0.98)}.main-content{flex:1;overflow-y:auto;padding:1rem;-webkit-overflow-scrolling:touch}.empty-state{text-align:center;padding:4rem 2rem;color:#666}.empty-state h2{font-size:1.5rem;margin-bottom:1rem}.profile-header{background:white;padding:1.5rem;border-radius:12px;margin-bottom:1rem;box-shadow:0 1px 3px rgba(0,0,0,0.1)}.profile-name{font-size:1.75rem;font-weight:700;color:#1e3a8a;margin-bottom:0.5rem}.profile-practice{font-size:1rem;color:#666;margin-bottom:1rem}.profile-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1rem;padding-top:1rem;border-top:1px solid #e5e5e5}.meta-item{display:flex;flex-direction:column;min-width:0;overflow:hidden}.meta-label{font-size:0.7rem;text-transform:uppercase;color:#999;letter-spacing:0.5px;margin-bottom:0.25rem}.meta-value{font-weight:600;color:#1e3a8a;font-size:0.9rem;overflow-wrap:anywhere;word-break:normal;min-width:0;max-width:100%}.meta-value a{display:block;word-break:break-all;overflow-wrap:anywhere;max-width:100%}.section{background:white;padding:1.5rem;border-radius:12px;margin-bottom:1rem;box-shadow:0 1px 3px rgba(0,0,0,0.1)}.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;padding-bottom:0.75rem;border-bottom:2px solid #f0f0f0}.section-header h3{font-size:1.25rem;color:#1e3a8a}.edit-btn{padding:0.5rem 1rem;background:#1e3a8a;color:white;border:none;border-radius:6px;font-weight:600;font-size:0.85rem;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation}.edit-btn:active{transform:scale(0.95)}.delete-btn{padding:0.5rem 1rem;background:#dc2626;color:white;border:none;border-radius:6px;font-weight:600;font-size:0.85rem;cursor:pointer;margin-left:0.5rem}.contact-grid{display:grid;gap:0.75rem}.contact-item{display:flex;gap:0.75rem;padding:0.875rem;background:#f9f9f9;border-radius:8px}.contact-icon{width:40px;height:40px;background:#1e3a8a;color:white;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.25rem}.contact-item-content{flex:1;min-width:0;overflow:hidden}.contact-item-label{font-size:0.7rem;text-transform:uppercase;color:#999;letter-spacing:0.5px;margin-bottom:0.25rem}.contact-item-value{font-weight:500;color:#333;font-size:0.9rem;overflow-wrap:break-word;word-break:break-word;max-width:100%}.contact-item-value a{color:#1e3a8a;text-decoration:none;word-break:break-all;overflow-wrap:anywhere;display:block;max-width:100%}.form-grid{display:grid;gap:1rem}.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}@media (max-width:500px){.form-row{grid-template-columns:1fr}}label{display:block;font-size:0.75rem;font-weight:600;color:#666;margin-bottom:0.25rem;text-transform:uppercase;letter-spacing:0.5px}input,textarea,select{width:100%;padding:0.875rem;border:2px solid #e5e5e5;border-radius:8px;font-size:1rem;font-family:inherit;-webkit-appearance:none}input:focus,textarea:focus,select:focus{outline:none;border-color:#1e3a8a}textarea{resize:vertical;min-height:100px}.btn-primary{width:100%;padding:1rem;background:#1e3a8a;color:white;border:none;border-radius:8px;font-weight:600;font-size:1rem;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation}.btn-primary:active{transform:scale(0.98)}.btn-primary:disabled{background:#ccc;cursor:not-allowed}.btn-primary.saving{background:#f59e0b;pointer-events:none}.btn-primary.saved{background:#10b981}.contact-entries{display:flex;flex-direction:column;gap:0.75rem}.contact-entry{padding:1rem;background:#f9f9f9;border-left:4px solid #1e3a8a;border-radius:8px}.contact-entry-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem}.contact-entry-date{font-size:0.75rem;color:#999;text-transform:uppercase;letter-spacing:0.5px}.contact-entry-location{display:block;font-size:0.8rem;color:#1e3a8a;margin-top:0.25rem}.contact-entry-timestamp{font-size:0.7rem;color:#bbb;margin-left:0.5rem;font-style:italic}.contact-entry-actions{display:flex;gap:0.5rem}.icon-btn{background:none;border:none;font-size:1rem;cursor:pointer;padding:0.25rem;opacity:0.6;transition:opacity 0.2s;touch-action:manipulation;-webkit-tap-highlight-color:transparent}.icon-btn:hover{opacity:1}.contact-entry-notes{font-size:0.9rem;line-height:1.5;color:#333;white-space:pre-wrap}.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:100;padding:1rem;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}.modal.active{display:flex;align-items:center;justify-content:center}.modal-content{background:white;border-radius:16px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;box-shadow:0 20px 25px -5px rgba(0,0,0,0.2)}.modal-header{display:flex;justify-content:space-between;align-items:center;padding:1.5rem;border-bottom:1px solid #e5e5e5;position:sticky;top:0;background:white;border-radius:16px 16px 0 0}.modal-header h2{font-size:1.5rem;color:#1e3a8a}.close-btn{background:none;border:none;font-size:2rem;cursor:pointer;color:#999;padding:0;width:40px;height:40px;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}.modal-body{padding:1.5rem}.locations-grid{display:flex;flex-direction:column;gap:1rem}.location-card{background:#f9f9f9;border-radius:10px;padding:1rem;border-left:4px solid #1e3a8a}.location-card.primary{border-left-color:#f97316}.location-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem}.location-label{font-weight:600;color:#1e3a8a;font-size:0.95rem}.location-badge{font-size:0.65rem;padding:0.2rem 0.5rem;background:#f97316;color:white;border-radius:4px;text-transform:uppercase;font-weight:600}.practice-badge{font-size:0.65rem;padding:0.2rem 0.5rem;background:#1e3a8a;color:white;border-radius:4px;margin-left:0.25rem}.location-actions{display:flex;gap:0.25rem}.location-details{display:grid;gap:0.5rem}.location-detail{display:flex;align-items:flex-start;gap:0.5rem;font-size:0.85rem}.location-detail-icon{flex-shrink:0;width:20px;text-align:center}.location-detail-value{color:#333}.location-detail-value a{color:#1e3a8a;text-decoration:none}.add-location-btn{display:flex;align-items:center;justify-content:center;gap:0.5rem;padding:1rem;background:rgba(10,77,60,0.05);border:2px dashed #1e3a8a;border-radius:10px;color:#1e3a8a;font-weight:600;cursor:pointer;transition:all 0.2s}.add-location-btn:hover{background:rgba(10,77,60,0.1)}.selector-section{margin-bottom:1rem;padding:1rem;background:#f0f9ff;border-radius:8px;border:1px solid #bae6fd}.selector-section h4{color:#0369a1;margin-bottom:0.75rem;font-size:0.9rem}.selector-options{display:flex;flex-direction:column;gap:0.5rem;max-height:200px;overflow-y:auto}.selector-option{display:flex;align-items:center;gap:0.5rem;padding:0.5rem;background:white;border-radius:6px;cursor:pointer;transition:all 0.2s;touch-action:manipulation;-webkit-tap-highlight-color:transparent}.selector-option:hover{background:#e0f2fe}.selector-option.selected{background:#0ea5e9;color:white}.selector-option input[type="checkbox"],.selector-option input[type="radio"]{width:18px;height:18px;margin:0;cursor:pointer;pointer-events:none}.selector-option-label{flex:1;font-size:0.85rem}.selector-option-sub{font-size:0.75rem;opacity:0.7}.btn-secondary{padding:0.5rem 1rem;background:#e5e5e5;color:#333;border:none;border-radius:6px;font-weight:600;font-size:0.85rem;cursor:pointer;margin-top:0.5rem;touch-action:manipulation;-webkit-tap-highlight-color:transparent}.btn-secondary:hover{background:#d5d5d5}@media (max-width:768px){.app{flex-direction:column}.mobile-header{display:flex}.sidebar{position:fixed;top:0;left:0;bottom:0;z-index:50;transform:translateX(-100%);box-shadow:2px 0 8px rgba(0,0,0,0.1)}.sidebar.open{transform:translateX(0)}.main-content{padding:0.5rem}.profile-name{font-size:1.5rem}.section{padding:1rem}}.loading{text-align:center;padding:3rem;color:#666}.empty-notice{text-align:center;padding:2rem;color:#999;font-style:italic}.sync-indicator{display:inline-block;width:8px;height:8px;border-radius:50%;margin-left:0.5rem;animation:pulse 1.5s infinite}.sync-indicator.synced{background:#10b981}.sync-indicator.syncing{background:#f59e0b;animation:pulse 0.5s infinite}.sync-indicator.error{background:#ef4444}@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}.toast-container{position:fixed;bottom:1rem;right:1rem;z-index:300;display:flex;flex-direction:column;gap:0.5rem}.toast{padding:1rem 1.5rem;border-radius:8px;color:white;font-weight:500;box-shadow:0 4px 12px rgba(0,0,0,0.15);animation:slideIn 0.3s ease}.toast.success{background:#10b981}.toast.error{background:#ef4444}.toast.info{background:#3b82f6}@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}.view-tabs{display:flex;gap:0.5rem;padding:0.5rem 1rem;border-bottom:1px solid rgba(255,255,255,0.1)}.view-tab{padding:0.5rem 1rem;background:rgba(255,255,255,0.1);border:none;border-radius:6px;color:white;font-size:0.8rem;cursor:pointer;transition:all 0.2s}.view-tab:hover{background:rgba(255,255,255,0.2)}.view-tab.active{background:#f97316}.admin-btn{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:white;padding:0.4rem 0.75rem;border-radius:6px;font-size:0.75rem;cursor:pointer;margin-top:0.5rem;transition:all 0.2s}.admin-btn:hover{background:rgba(255,255,255,0.2)}.admin-panel{background:#1a1a2e;border:1px solid #333;border-radius:8px;padding:1rem;margin-top:1rem;display:none}.admin-panel.show{display:block}.admin-panel h4{color:#f97316;margin-bottom:0.75rem;font-size:0.9rem}.admin-panel p{color:#aaa;font-size:0.8rem;margin-bottom:0.75rem}.btn-danger{background:#dc2626;color:white;border:none;padding:0.6rem 1rem;border-radius:6px;font-size:0.85rem;cursor:pointer;width:100%;margin-bottom:0.5rem;transition:all 0.2s}.btn-danger:hover{background:#b91c1c}.btn-warning{background:#f59e0b;color:white;border:none;padding:0.6rem 1rem;border-radius:6px;font-size:0.85rem;cursor:pointer;width:100%;transition:all 0.2s}.btn-warning:hover{background:#d97706}.loc-edit-card{background:#eff6ff;border:1px solid #dbeafe;border-radius:10px;padding:1rem;margin-bottom:0.75rem;position:relative}.loc-edit-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;padding-bottom:0.5rem;border-bottom:1px solid #dbeafe}.loc-edit-card-title{font-weight:600;color:#1e3a8a;font-size:0.85rem}.loc-edit-card .remove-loc-btn{background:none;border:none;color:#dc2626;font-size:1.1rem;cursor:pointer;padding:0.25rem 0.5rem;border-radius:4px;opacity:0.6;transition:opacity 0.2s}.loc-edit-card .remove-loc-btn:hover{opacity:1;background:rgba(220,38,38,0.1)}.loc-edit-card .form-row{display:grid;grid-template-columns:1fr 1fr;gap:0.5rem}.loc-edit-card input,.loc-edit-card select{padding:0.625rem;font-size:0.85rem;border:1.5px solid #dbeafe;border-radius:6px}.loc-edit-card input:focus{border-color:#1e3a8a;outline:none}.loc-edit-card label{font-size:0.65rem;margin-bottom:0.125rem;color:#555}.loc-edit-card .loc-field{margin-bottom:0.5rem}.loc-edit-card .loc-advanced-toggle{background:none;border:none;color:#1e3a8a;font-size:0.75rem;cursor:pointer;padding:0.25rem 0;text-decoration:underline;margin-top:0.25rem}.loc-edit-card .loc-advanced{display:none}.loc-edit-card .loc-advanced.show{display:block}.routing-row{padding:0.625rem 0.75rem;border-radius:8px;margin-bottom:0.375rem;font-size:0.8rem;display:flex;align-items:flex-start;gap:0.5rem;cursor:pointer;transition:background 0.15s}.routing-row:hover{filter:brightness(0.97)}.routing-row.new-row{background:#fef3c7;border-left:3px solid #f59e0b}.routing-row.exported-row{background:#f3f4f6;border-left:3px solid #9ca3af}.routing-row.no-phys-row{background:#fce7f3;border-left:3px solid #ec4899}.routing-row input[type="checkbox"]{margin-top:0.15rem;width:16px;height:16px;min-width:16px}.routing-row-content{flex:1;min-width:0}.routing-row-name{font-weight:600;color:#1e3a8a}.routing-row-detail{color:#666;font-size:0.75rem;margin-top:0.125rem}.routing-row-badge{font-size:0.6rem;padding:0.125rem 0.4rem;border-radius:3px;font-weight:600;white-space:nowrap;flex-shrink:0}.routing-row-badge.new{background:#f59e0b;color:white}.routing-row-badge.exported{background:#d1d5db;color:#4b5563}
+</style>
+</head>
+<body>
+<div id="sidebarOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:45;" onclick="closeSidebar()"></div>
+<div id="connectionStatus" class="connection-status hidden">Connecting...</div>
+<div id="toastContainer" class="toast-container"></div>
+<div class="app">
+<div class="mobile-header">
+<button class="menu-btn" onclick="toggleSidebar()">☰</button>
+<h1>CRM Demo <span id="mobileSyncIndicator" class="sync-indicator synced"></span></h1>
+<button class="add-header-btn" onclick="goHome()" title="Home" style="font-size:1.2rem;">🏠</button>
+<button class="add-header-btn" onclick="openPhysicianModal()">+</button>
+</div>
+<!-- SECTION: HTML-SIDEBAR (sidebar nav, search, sort, provider list, admin panel) -->
+<aside class="sidebar" id="sidebar">
+<div class="sidebar-header">
+<h1>CRM Demo <span id="desktopSyncIndicator" class="sync-indicator synced"></span></h1>
+<div class="subtitle">Field Sales CRM</div>
+<div class="count" id="physicianCount">Loading...</div>
+<button class="admin-btn" onclick="goHome()" style="background:#3b82f6;border-color:#3b82f6;">🏠 Home</button>
+<button class="admin-btn" onclick="setView('map')" style="background:#0ea5e9;border-color:#0ea5e9;">🗺️ Map</button>
+<button class="admin-btn" onclick="setView('tasks')" style="background:#7c3aed;border-color:#7c3aed;">✅ Tasks</button>
+<button class="admin-btn" onclick="toggleAdminPanel()">Admin Settings</button>
+<div class="admin-panel" id="adminPanel">
+<h4>Database Management</h4>
+<p style="color:#aaa;font-size:0.8rem;margin-bottom:0.75rem;">Add new records to the existing database, or manage all data.</p>
+<label style="display:block;margin-bottom:0.5rem;padding:0.75rem;background:#3b82f6;color:white;border-radius:8px;font-weight:600;text-align:center;cursor:pointer;font-size:0.95rem;">
+Append New Records from CSV <input type="file" accept=".csv" onchange="importCSV(this.files[0])" style="display:none">
+</label>
+<div style="font-size:0.7rem;color:#888;margin-bottom:0.75rem;text-align:center;">Adds new providers without affecting existing data</div>
+<div id="importStatus" style="font-size:0.8rem;margin-bottom:0.5rem;color:#ccc;"></div>
+<textarea id="csvPasteArea" placeholder="— or paste CSV text here —" style="width:100%;min-height:72px;background:#2a2a3e;color:#ccc;border:1px solid #444;border-radius:6px;padding:0.5rem;font-size:0.72rem;font-family:monospace;resize:vertical;margin-bottom:0.25rem;"></textarea>
+<button onclick="importCSVPaste()" style="background:#3b82f6;color:white;border:none;padding:0.6rem 1rem;border-radius:6px;font-size:0.85rem;cursor:pointer;width:100%;font-weight:600;margin-bottom:0.5rem;">Import Pasted CSV</button>
+<h4 style="margin-top:1rem;color:#0ea5e9;">Data Export</h4>
+<p style="color:#aaa;font-size:0.8rem;margin-bottom:0.75rem;">Download your CRM data as CSV files.</p>
+<button style="background:#0ea5e9;color:white;border:none;padding:0.6rem 1rem;border-radius:6px;font-size:0.85rem;cursor:pointer;width:100%;font-weight:600;" onclick="openExportModal()">Export Data</button>
+<h4 style="margin-top:1rem;color:#f97316;">Analytics</h4>
+<button style="background:#f97316;color:white;border:none;padding:0.6rem 1rem;border-radius:6px;font-size:0.85rem;cursor:pointer;width:100%;font-weight:600;" onclick="setView('dashboard')">Territory Dashboard</button>
+<h4 style="margin-top:1rem;color:#3b82f6;">Google Sheet Sync</h4>
+<button style="background:#10b981;color:white;border:none;padding:0.6rem 1rem;border-radius:6px;font-size:0.85rem;cursor:pointer;width:100%;font-weight:600;margin-bottom:0.4rem;" onclick="syncGoogleSheet()">Sync to Google Sheet Now</button>
+<div id="syncSheetStatus" style="font-size:0.75rem;color:#aaa;min-height:1rem;margin-bottom:0.35rem;"></div>
+<div style="font-size:0.7rem;color:#888;margin-bottom:0.2rem;">Web app URL (paste once after deploying Apps Script):</div>
+<input id="sheetSyncUrl" type="url" placeholder="https://script.google.com/macros/s/…/exec" style="width:100%;padding:0.4rem 0.6rem;background:#2a2a3e;color:#ccc;border:1px solid #444;border-radius:6px;font-size:0.72rem;font-family:monospace;margin-bottom:0.25rem;box-sizing:border-box;" oninput="localStorage.setItem('sheetSyncUrl',this.value.trim())">
+<button class="btn-danger" onclick="clearDatabase()" style="margin-top:1rem;">Clear All Data</button>
+<h4 style="margin-top:1rem;color:#a78bfa;">🛠️ DB Tools</h4>
+<div style="display:flex;flex-direction:column;gap:0.4rem;margin-top:0.25rem;">
+<a href="db_audit.html" target="_blank" style="display:block;background:#7c3aed;color:white;padding:0.6rem 1rem;border-radius:6px;font-size:0.85rem;font-weight:600;text-align:center;text-decoration:none;">🔍 DB Audit</a>
+<a href="db_cleanup.html" target="_blank" style="display:block;background:#7c3aed;color:white;padding:0.6rem 1rem;border-radius:6px;font-size:0.85rem;font-weight:600;text-align:center;text-decoration:none;">🧹 DB Cleanup</a>
+<a href="audit_merge_execute.html" target="_blank" style="display:block;background:#7c3aed;color:white;padding:0.6rem 1rem;border-radius:6px;font-size:0.85rem;font-weight:600;text-align:center;text-decoration:none;">🔀 Merge Executor</a>
+<a href="audit_mohs_execute.html" target="_blank" style="display:block;background:#7c3aed;color:white;padding:0.6rem 1rem;border-radius:6px;font-size:0.85rem;font-weight:600;text-align:center;text-decoration:none;">🔪 Audit Executor</a>
+<a href="npi_lookup_v3.html" target="_blank" style="display:block;background:#6d28d9;color:white;padding:0.6rem 1rem;border-radius:6px;font-size:0.85rem;font-weight:600;text-align:center;text-decoration:none;">🔎 NPI Lookup</a>
+</div>
+</div>
+</div>
+<div class="view-tabs">
+<button class="view-tab active" onclick="setView('physicians')" id="tabPhysicians">HCPs</button>
+<button class="view-tab" onclick="setView('practices')" id="tabPractices">Practices</button>
+<button class="view-tab" onclick="setView('activity')" id="tabActivity">Activity</button>
+<button class="view-tab" onclick="setView('map')" id="tabMap" style="display:none;"></button>
+<button class="view-tab" onclick="setView('dashboard')" id="tabDashboard" style="display:none;"></button>
+</div>
+<div class="search-box">
+<div class="search-wrapper">
+<input type="text" class="search-input" id="searchInput" placeholder="Search HCPs..." oninput="filterList()" spellcheck="false" autocorrect="off" autocapitalize="none">
+<button class="search-clear" id="searchClear" onclick="clearSearch()" style="display:none">&times;</button>
+</div>
+</div>
+<div class="sort-controls" id="sortControls">
+<button class="sort-btn active" onclick="setSortBy('name')" id="sortName">Name</button>
+<button class="sort-btn" onclick="setSortBy('city')" id="sortCity">City</button>
+<button class="sort-btn" onclick="setSortBy('zip')" id="sortZip">ZIP</button>
+<button class="sort-btn" onclick="setSortBy('tier')" id="sortTier">Tier</button>
+<button class="sort-btn active" onclick="setFilterTier(null)" id="filterAll">All</button>
+</div>
+<div class="sort-controls" id="tierFilterControls">
+<button class="sort-btn" onclick="setFilterTier('1')" id="filterT1" style="background:#ef4444;color:white;font-weight:700;border:none;">P1</button>
+<button class="sort-btn" onclick="setFilterTier('2')" id="filterT2" style="background:#f97316;color:white;font-weight:700;border:none;">P2</button>
+<button class="sort-btn" onclick="setFilterTier('3')" id="filterT3" style="background:#3b82f6;color:white;font-weight:700;border:none;">P3</button>
+<button class="sort-btn" onclick="setFilterTier('4')" id="filterT4" style="background:#8b5cf6;color:white;font-weight:700;border:none;">P4</button>
+<button class="sort-btn" onclick="setFilterTier('5')" id="filterT5" style="background:#64748b;color:white;font-weight:700;border:none;">P5</button>
+</div>
+<ul class="physician-list" id="physicianList">
+<li class="loading">Loading providers...</li>
+</ul>
+<button class="add-physician-btn" id="addBtn" onclick="openPhysicianModal()">+ New Provider</button>
+</aside>
+<!-- SECTION: HTML-MAIN-CONTENT (main panel, welcome state) -->
+<main class="main-content" id="mainContent">
+<div class="empty-state">
+<h2>Welcome to CRM Demo</h2>
+<p>Select a provider from the list to view their profile</p>
+<div id="importStatusMain" style="font-size:0.85rem;margin-top:0.5rem;color:#666;"></div>
+</div>
+</main>
+</div>
+<!-- SECTION: HTML-MODALS (physicianModal, practiceModal, locationModal, contactModal, exportModal, routingExportModal, assignLocationModal, assignPhysicianModal) -->
+<div class="modal" id="physicianModal">
+<div class="modal-content">
+<div class="modal-header">
+<h2 id="modalTitle">Add Provider</h2>
+<button class="close-btn" onclick="closePhysicianModal()">&times;</button>
+</div>
+<div class="modal-body">
+<form id="physicianForm" onsubmit="savePhysician(event)">
+<div class="form-grid">
+<div class="selector-section" id="practiceSelector">
+<h4>Select or Create Practice</h4>
+<input type="text" id="practiceSearchInput" placeholder="Search practices..." oninput="filterPracticeOptions()" style="width:100%;padding:0.5rem;border:1px solid #bae6fd;border-radius:6px;margin-bottom:0.5rem;font-size:0.85rem;">
+<div class="selector-options" id="practiceOptions">
+</div>
+<button type="button" class="btn-secondary" onclick="toggleNewPractice()">+ New Practice</button>
+<div id="newPracticeFields" style="display: none; margin-top: 1rem;">
+<label>New Practice Name</label>
+<input type="text" id="newPracticeName" placeholder="e.g., Northside Medical Associates">
+</div>
+</div>
+<div class="selector-section" id="locationSelector" style="display: none;">
+<h4>Assign to Locations</h4>
+<div class="selector-options" id="locationOptions">
+</div>
+<button type="button" class="btn-secondary" onclick="toggleNewLocation()">+ New Location</button>
+</div>
+<div class="form-row">
+<div>
+<label>First Name *</label>
+<input type="text" id="firstName" required>
+</div>
+<div>
+<label>Last Name *</label>
+<input type="text" id="lastName" required>
+</div>
+</div>
+<div class="form-row">
+<div>
+<label>Degree</label>
+<select id="degree">
+<option value="">-- Select --</option>
+<option value="MD">MD</option>
+<option value="DO">DO</option>
+<option value="DPM">DPM</option>
+<option value="PA-C">PA-C</option>
+<option value="NP">NP</option>
+<option value="APRN">APRN</option>
+<option value="RN">RN</option>
+<option value="PhD">PhD</option>
+<option value="Other">Other</option>
+</select>
+</div>
+<div>
+<label>Job Title / Role</label>
+<input type="text" id="staffTitle" placeholder="e.g. Office Manager, Medical Director">
+<div style="font-size:0.72rem;color:#888;margin-top:0.2rem;">For staff: select "Staff" above, enter role here</div>
+</div>
+</div>
+<div>
+<label>Email</label>
+<input type="email" id="physicianEmail">
+</div>
+<div>
+<label>Mobile Phone</label>
+<input type="tel" id="mobilePhone" placeholder="305-555-1234">
+</div>
+<div class="form-row">
+<div>
+<label>Priority Tier (Quintile)</label>
+<select id="priority">
+<option value="">-- Select Tier --</option>
+<option value="1">P1 — Highest</option>
+<option value="2">P2 — High</option>
+<option value="3">P3 — Medium</option>
+<option value="4">P4 — Lower</option>
+<option value="5">P5 — Lowest</option>
+</select>
+</div>
+<div>
+<label>Specialty / Role</label>
+<select id="specialty">
+<option value="">-- Select --</option>
+<option value="Dermatology">Dermatology</option>
+<option value="Podiatry">Podiatry</option>
+<option value="Wound Care">Wound Care</option>
+<option value="Other">Other</option>
+<option value="Staff">Staff</option>
+</select>
+</div>
+</div>
+<div>
+<label>Academic Connection</label>
+<input type="text" id="umConnection" placeholder="e.g., UM, Barry University">
+</div>
+<div>
+<label>Projected Volume</label>
+<input type="text" id="patientVolume">
+</div>
+<div style="display:flex;align-items:center;gap:0.75rem;padding:0.75rem;background:#f0fff4;border-radius:8px;border:2px solid #d1fae5;">
+<input type="checkbox" id="isTarget" style="width:22px;height:22px;min-width:22px;">
+<div><label for="isTarget" style="font-size:0.95rem;font-weight:600;color:#1e3a8a;margin:0;text-transform:none;letter-spacing:0;cursor:pointer;display:inline;">Sales Target</label><div style="font-size:0.8rem;color:#666;margin-top:0.1rem;">Check if actively targeting for product referrals</div></div>
+</div>
+<div style="display:flex;align-items:center;gap:0.75rem;padding:0.75rem;background:#f5f3ff;border-radius:8px;border:2px solid #ddd6fe;">
+<input type="checkbox" id="isMobile" style="width:22px;height:22px;min-width:22px;">
+<div><label for="isMobile" style="font-size:0.95rem;font-weight:600;color:#7c3aed;margin:0;text-transform:none;letter-spacing:0;cursor:pointer;display:inline;">Mobile / Home Health</label><div style="font-size:0.8rem;color:#666;margin-top:0.1rem;">No fixed office — visits patients at home or facility</div></div>
+</div>
+<div>
+<label>General Notes</label>
+<textarea id="physicianGeneralNotes" rows="3"></textarea>
+</div>
+</div>
+<button type="submit" class="btn-primary" id="physicianSaveBtn" style="margin-top: 1.5rem;">Save Provider</button>
+</form>
+</div>
+</div>
+</div>
+<div class="modal" id="locationModal">
+<div class="modal-content">
+<div class="modal-header">
+<h2 id="locationModalTitle">Add Location</h2>
+<button class="close-btn" onclick="closeLocationModal()">&times;</button>
+</div>
+<div class="modal-body">
+<form id="locationForm" onsubmit="saveLocation(event)">
+<div class="form-grid">
+<div class="selector-section" id="locationPracticeSelector">
+<h4>Practice for this Location</h4>
+<select id="locationPracticeId" required style="width: 100%;">
+<option value="">-- Select Practice --</option>
+</select>
+<div id="locationPracticeEditRow" style="display:none;margin-top:0.5rem;">
+<label style="font-size:0.7rem;color:#0369a1;">Practice Group Name (editable)</label>
+<div style="display:flex;gap:0.5rem;align-items:center;">
+<input type="text" id="locationPracticeNameEdit" style="flex:1;" placeholder="Edit practice group name...">
+<button type="button" class="edit-btn" onclick="saveInlinePracticeName()" style="font-size:0.75rem;white-space:nowrap;padding:0.625rem 0.75rem;">Rename</button>
+</div>
+</div>
+</div>
+<div>
+<label>Office Location Label</label>
+<input type="text" id="locationLabel" placeholder="e.g., Northside Office — Suite 100">
+<div style="font-size:0.72rem;color:#888;margin-top:0.2rem;">Recommended: Practice Group Name — City (e.g., Water's Edge — Delray)</div>
+</div>
+<div style="background:#eff6ff;border:1px solid #86efac;border-radius:8px;padding:0.75rem;margin-bottom:0.25rem;">
+<label style="color:#1e3a8a;">Paste Full Address Block (auto-fill)</label>
+<textarea id="addressBlock" rows="2" placeholder="e.g., 123 Commerce Dr, Springfield, IL 62701" style="font-size:0.9rem;min-height:50px;"></textarea>
+<button type="button" onclick="parseAddressBlock()" style="margin-top:0.4rem;padding:0.4rem 1rem;background:#1e3a8a;color:white;border:none;border-radius:6px;font-size:0.85rem;cursor:pointer;font-weight:600;">⚡ Auto-Fill Fields</button>
+</div>
+<div>
+<label>Street Address</label>
+<input type="text" id="locationAddress">
+</div>
+<div class="form-row">
+<div>
+<label>City</label>
+<input type="text" id="locationCity">
+</div>
+<div>
+<label>ZIP</label>
+<input type="text" id="locationZip">
+</div>
+</div>
+<div class="form-row">
+<div>
+<label>Phone</label>
+<input type="tel" id="locationPhone">
+</div>
+<div>
+<label>Fax</label>
+<input type="tel" id="locationFax">
+</div>
+</div>
+<div>
+<label>Office Email</label>
+<input type="email" id="locationEmail">
+</div>
+<div>
+<label>Office Hours</label>
+<input type="text" id="locationHours" placeholder="e.g., Mon-Fri 9AM-5PM">
+</div>
+<div>
+<label>Office Staff Names</label>
+<input type="text" id="locationStaff">
+</div>
+<div class="form-row">
+<div>
+<label>Main Receptionist</label>
+<input type="text" id="locationReceptionist">
+</div>
+<div>
+<label>Best Days to Visit</label>
+<input type="text" id="locationBestDays">
+</div>
+</div>
+<div>
+<label>General Info / Notes</label>
+<textarea id="locationNotes" rows="3" placeholder="Any general notes about this office..." style="font-size:0.9rem;"></textarea>
+</div>
+</div>
+<button type="submit" class="btn-primary" id="locationSaveBtn" style="margin-top: 1.5rem;">Save Location</button>
+</form>
+</div>
+</div>
+</div>
+<div class="modal" id="practiceModal">
+<div class="modal-content">
+<div class="modal-header">
+<h2 id="practiceModalTitle">Add Practice</h2>
+<button class="close-btn" onclick="closePracticeModal()">&times;</button>
+</div>
+<div class="modal-body">
+<form id="practiceForm" onsubmit="savePractice(event)">
+<div class="form-grid">
+<div>
+<label>Practice Group Name *</label>
+<input type="text" id="practiceName" required>
+<div style="font-size:0.72rem;color:#888;margin-top:0.2rem;">Group/company name shared across all its office locations</div>
+</div>
+<div>
+<label>Website</label>
+<input type="text" id="practiceWebsite" placeholder="e.g., www.practice.com">
+</div>
+<div>
+<label>Email</label>
+<input type="email" id="practiceEmail" placeholder="info@practice.com">
+</div>
+<div>
+<label>General Notes</label>
+<textarea id="practiceNotes" rows="3"></textarea>
+</div>
+<div id="practiceAddressSection">
+<div style="border-top:1px solid #e5e5e5;margin-top:0.5rem;padding-top:0.75rem;">
+<label style="color:#1e3a8a;font-size:0.85rem;margin-bottom:0.5rem;">Primary Location (optional)</label>
+</div>
+<div>
+<label>Paste Full Address</label>
+<textarea id="practiceAddressBlock" rows="2" placeholder="Paste full address block here, e.g.:&#10;123 Commerce Dr&#10;Springfield, IL 62701&#10;(555) 555-1234" style="font-size:0.9rem;min-height:50px;"></textarea>
+<button type="button" onclick="parseAddressBlock('practice')" style="margin-top:0.4rem;padding:0.4rem 1rem;background:#1e3a8a;color:white;border:none;border-radius:6px;font-size:0.85rem;cursor:pointer;font-weight:600;">⚡ Auto-Fill Fields</button>
+</div>
+<div>
+<label>Address</label>
+<input type="text" id="practiceAddress" placeholder="123 Main St">
+</div>
+<div class="form-row">
+<div><label>City</label><input type="text" id="practiceCity"></div>
+<div><label>ZIP</label><input type="text" id="practiceZip"></div>
+</div>
+<div class="form-row">
+<div><label>Phone</label><input type="tel" id="practicePhone"></div>
+<div><label>Fax</label><input type="tel" id="practiceFax"></div>
+</div>
+</div>
+<div id="practiceLocationsEditSection" style="display:none;">
+<div style="border-top:1px solid #e5e5e5;margin-top:0.5rem;padding-top:0.75rem;">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
+<label style="color:#1e3a8a;font-size:0.85rem;font-weight:600;">Locations</label>
+<button type="button" class="edit-btn" onclick="addNewLocationCard()" style="font-size:0.75rem;">+ Add Location</button>
+</div>
+</div>
+<div id="practiceLocationsCards"></div>
+</div>
+</div>
+<button type="submit" class="btn-primary" id="practiceSaveBtn" style="margin-top: 1.5rem;">Save Practice</button>
+</form>
+</div>
+</div>
+</div>
+<div class="modal" id="contactModal">
+<div class="modal-content">
+<div class="modal-header">
+<h2 id="contactModalTitle">Add Contact Note</h2>
+<button class="close-btn" onclick="closeContactModal()">&times;</button>
+</div>
+<div class="modal-body">
+<form id="contactForm" onsubmit="saveContact(event)">
+<div class="form-grid">
+<div class="form-row">
+<div>
+<label>Your Name *</label>
+<select id="authorName" style="width:100%;padding:0.6rem 0.5rem;font-size:0.9rem;border:1px solid #e5e5e5;border-radius:6px;font-family:inherit;"><option value="">— select —</option><option value="Tom">Tom</option><option value="Travis">Travis</option></select>
+</div>
+<div>
+<label>Date *</label>
+<input type="date" id="contactDate">
+</div>
+<div>
+<label>Time</label>
+<input type="time" id="contactTime">
+</div>
+</div>
+<div id="contactProviderRow" style="display:none;margin-bottom:0.75rem;">
+<label>Provider</label>
+<div style="position:relative;">
+<input type="text" id="contactProviderSearch" placeholder="Search providers..." autocomplete="off" oninput="filterContactProviders()" style="width:100%;padding:0.75rem;font-size:0.9rem;border:2px solid #e5e5e5;border-radius:8px;box-sizing:border-box;font-family:inherit;">
+<div id="contactProviderResults" style="display:none;position:absolute;top:100%;left:0;right:0;background:white;border:1px solid #d1d5db;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.1);z-index:200;max-height:200px;overflow-y:auto;margin-top:2px;"></div>
+</div>
+<input type="hidden" id="contactProviderSelectedId">
+</div>
+<div id="contactPracticeRow" style="display:none;margin-bottom:0.75rem;">
+<div style="text-align:center;font-size:0.8rem;color:#aaa;margin:0 0 0.5rem;">— or log for a practice / office only (no provider) —</div>
+<label>Practice / Office</label>
+<div style="position:relative;">
+<input type="text" id="contactPracticeSearch" placeholder="Search practices..." autocomplete="off" oninput="filterContactPractices()" style="width:100%;padding:0.75rem;font-size:0.9rem;border:2px solid #fcd34d;border-radius:8px;box-sizing:border-box;font-family:inherit;">
+<div id="contactPracticeResults" style="display:none;position:absolute;top:100%;left:0;right:0;background:white;border:1px solid #d1d5db;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.1);z-index:200;max-height:200px;overflow-y:auto;margin-top:2px;"></div>
+</div>
+<input type="hidden" id="contactPracticeSelectedId">
+</div>
+<div id="locationSelectRow">
+<label>Location</label>
+<select id="contactLocation">
+<option value="">Select location...</option>
+</select>
+</div>
+<div id="alsoAttendedRow" style="display:none;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:0.5rem 0.75rem;">
+<label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;text-transform:none;letter-spacing:0;font-size:0.9rem;color:#1e3a8a;font-weight:600;" onclick="var el=$('alsoAttendedDetails');el.style.display=el.style.display==='none'?'block':'none';">
+👥 Who was present? <span style="font-size:0.7rem;font-weight:400;opacity:0.7;">tap to expand (optional)</span>
+</label>
+<div id="alsoAttendedDetails" style="display:none;margin-top:0.5rem;">
+<div id="alsoAttendedList" style="max-height:130px;overflow-y:auto;"></div>
+<div style="margin-top:0.5rem;">
+<label style="font-size:0.8rem;color:#555;text-transform:none;letter-spacing:0;font-weight:400;">Staff present (optional, e.g. Jane MA, Bob)</label>
+<input type="text" id="staffPresent" placeholder="Staff names..." style="width:100%;padding:0.4rem 0.6rem;border:1px solid #bae6fd;border-radius:6px;font-size:0.9rem;margin-top:0.2rem;">
+</div>
+</div>
+</div>
+<div>
+<label>Notes *</label>
+<div style="display:flex;gap:0.5rem;margin-bottom:0.5rem;">
+<button type="button" onclick="prefixNote('Call: ')" style="padding:0.4rem 1rem;background:#1e3a8a;color:white;border:none;border-radius:6px;font-weight:600;font-size:0.85rem;cursor:pointer;">📞 Call</button>
+<button type="button" onclick="prefixNote('Visit: ')" style="padding:0.4rem 1rem;background:#f97316;color:white;border:none;border-radius:6px;font-weight:600;font-size:0.85rem;cursor:pointer;">🏥 Visit</button>
+<button type="button" onclick="prefixNote('Email: ')" style="padding:0.4rem 1rem;background:#6366f1;color:white;border:none;border-radius:6px;font-weight:600;font-size:0.85rem;cursor:pointer;">✉️ Email</button>
+</div>
+<textarea id="contactNotes" placeholder="What happened during this call/visit?" rows="6"></textarea>
+</div>
+<div id="reminderRow" style="padding:0.75rem;background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;">
+<label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;text-transform:none;letter-spacing:0;font-size:0.9rem;color:#92400e;">
+<input type="checkbox" id="setReminder">
+Add Follow-Up Task after saving
+</label>
+<div style="font-size:0.75rem;color:#b45309;margin-top:0.25rem;">A separate task window will open after saving this note.</div>
+</div>
+</div>
+<button type="submit" class="btn-primary" id="contactSaveBtn" style="margin-top: 1rem;">Save Note</button>
+</form>
+</div>
+</div>
+</div>
+<div class="modal" id="assignLocationModal">
+<div class="modal-content">
+<div class="modal-header">
+<h2>Assign to Location</h2>
+<button class="close-btn" onclick="closeAssignLocationModal()">&times;</button>
+</div>
+<div class="modal-body">
+<div id="quickAddPracticeSection" style="margin-bottom:1rem;padding:1rem;background:#f0fdf4;border:1px solid #86efac;border-radius:8px;">
+<h4 style="color:#1e3a8a;margin-bottom:0.75rem;font-size:0.9rem;">Quick Add New Practice + Location</h4>
+<div style="margin-bottom:0.5rem;"><input type="text" id="quickPracticeName" placeholder="Practice Name" style="padding:0.5rem;font-size:0.85rem;"></div>
+<div style="margin-bottom:0.5rem;background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:0.5rem;">
+<label style="font-size:0.65rem;color:#1e3a8a;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Paste Address Block (Auto-Fill)</label>
+<textarea id="quickAddressBlock" placeholder="Paste full address here..." style="width:100%;padding:0.4rem;font-size:0.8rem;min-height:60px;border:1px solid #d1fae5;border-radius:4px;resize:vertical;margin-top:0.25rem;"></textarea>
+<button type="button" onclick="parseAddressBlock('quick')" style="margin-top:0.35rem;padding:0.35rem 0.75rem;background:#1e3a8a;color:white;border:none;border-radius:5px;font-size:0.78rem;font-weight:600;cursor:pointer;">⚡ Auto-Fill Fields</button>
+</div>
+<div class="form-row" style="margin-bottom:0.5rem;">
+<div><input type="text" id="quickPracticeAddr" placeholder="Address" style="padding:0.5rem;font-size:0.85rem;"></div>
+<div><input type="text" id="quickPracticeCity" placeholder="City" style="padding:0.5rem;font-size:0.85rem;"></div>
+</div>
+<div class="form-row" style="margin-bottom:0.5rem;">
+<div><input type="text" id="quickPracticeZip" placeholder="ZIP" style="padding:0.5rem;font-size:0.85rem;"></div>
+<div><input type="tel" id="quickPracticePhone" placeholder="Phone" style="padding:0.5rem;font-size:0.85rem;"></div>
+</div>
+<div style="margin-bottom:0.5rem;"><input type="email" id="quickPracticeEmail" placeholder="Office Email" style="padding:0.5rem;font-size:0.85rem;"></div>
+<button type="button" class="btn-secondary" style="background:#1e3a8a;color:white;width:100%;" onclick="quickAddPracticeAndAssign()">Create & Assign</button>
+</div>
+<p style="margin-bottom: 0.5rem; color: #666;">Or select existing locations:</p>
+<input type="text" id="assignLocationSearch" placeholder="Search practices or locations..." oninput="filterAssignLocationOptions()" style="width:100%;padding:0.5rem;border:1px solid #e5e5e5;border-radius:6px;margin-bottom:0.5rem;font-size:0.85rem;">
+<div class="selector-options" id="assignLocationOptions" style="max-height: 300px;">
+</div>
+<button type="button" class="btn-primary" style="margin-top: 1rem;" onclick="saveLocationAssignments()">Save Assignments</button>
+</div>
+</div>
+</div>
+<div class="modal" id="assignPhysicianModal">
+<div class="modal-content">
+<div class="modal-header">
+<h2>Assign Provider to Location</h2>
+<button class="close-btn" onclick="closeAssignPhysicianModal()">&times;</button>
+</div>
+<div class="modal-body">
+<p style="margin-bottom: 0.5rem; color: #666;">Select a location at this practice:</p>
+<select id="assignPhysLocationSelect" style="width:100%;margin-bottom:1rem;padding:0.5rem;border:1px solid #e5e5e5;border-radius:6px;font-size:0.9rem;"></select>
+<div id="quickAddPhysSection" style="margin-bottom:1rem;padding:1rem;background:#f0fdf4;border:1px solid #86efac;border-radius:8px;">
+<h4 style="color:#1e3a8a;margin-bottom:0.75rem;font-size:0.9rem;">Quick Add New Provider</h4>
+<div id="quickAddError" style="display:none;color:#dc2626;font-size:0.82rem;font-weight:600;padding:0.4rem 0.6rem;background:#fef2f2;border:1px solid #fca5a5;border-radius:6px;margin-bottom:0.5rem;"></div>
+<div class="form-row" style="margin-bottom:0.5rem;">
+<div><input type="text" id="quickPhysFirst" placeholder="First Name" style="padding:0.5rem;font-size:0.85rem;"></div>
+<div><input type="text" id="quickPhysLast" placeholder="Last Name" style="padding:0.5rem;font-size:0.85rem;"></div>
+</div>
+<div class="form-row" style="margin-bottom:0.5rem;">
+<div>
+<select id="quickPhysDegree" style="padding:0.5rem;font-size:0.85rem;">
+<option value="">Degree</option>
+<option value="MD">MD</option>
+<option value="DO">DO</option>
+<option value="DPM">DPM</option>
+<option value="PA-C">PA-C</option>
+<option value="NP">NP</option>
+<option value="APRN">APRN</option>
+<option value="RN">RN</option>
+<option value="PhD">PhD</option>
+<option value="Other">Other</option>
+</select>
+</div>
+<div>
+<select id="quickPhysSpecialty" style="padding:0.5rem;font-size:0.85rem;">
+<option value="">Specialty</option>
+<option value="Dermatology">Dermatology</option>
+<option value="Podiatry">Podiatry</option>
+<option value="Wound Care">Wound Care</option>
+<option value="Other">Other</option>
+<option value="Staff">Staff</option>
+</select>
+</div>
+</div>
+<div class="form-row" style="margin-bottom:0.5rem;">
+<div>
+<select id="quickPhysPriority" style="padding:0.5rem;font-size:0.85rem;">
+<option value="">Priority</option>
+<option value="1">P1</option>
+<option value="2">P2</option>
+<option value="3">P3</option>
+<option value="4">P4</option>
+<option value="5">P5</option>
+</select>
+</div>
+<div><input type="text" id="quickPhysTitle" placeholder="Role / Title" style="padding:0.5rem;font-size:0.85rem;"></div>
+</div>
+<div class="form-row" style="margin-bottom:0.5rem;">
+<div><input type="email" id="quickPhysEmail" placeholder="Email" style="padding:0.5rem;font-size:0.85rem;"></div>
+<div><input type="tel" id="quickPhysMobile" placeholder="Mobile Phone" style="padding:0.5rem;font-size:0.85rem;"></div>
+</div>
+<div style="margin-bottom:0.5rem;"><textarea id="quickPhysNotes" placeholder="General notes (optional)" rows="2" style="padding:0.5rem;font-size:0.85rem;width:100%;border:1px solid #d1d5db;border-radius:6px;resize:vertical;font-family:inherit;"></textarea></div>
+<button type="button" class="btn-secondary" style="background:#1e3a8a;color:white;width:100%;" onclick="quickAddPhysician()">Add & Assign Provider</button>
+</div>
+<p style="margin-bottom: 0.5rem; color: #666;">Or select existing providers:</p>
+<input type="text" id="assignPhysSearch" placeholder="Search providers..." oninput="filterAssignPhysicianOptions()" style="width:100%;padding:0.5rem;border:1px solid #e5e5e5;border-radius:6px;margin-bottom:0.5rem;font-size:0.85rem;">
+<div class="selector-options" id="assignPhysicianOptions" style="max-height: 300px;">
+</div>
+<button type="button" class="btn-primary" style="margin-top: 1rem;" onclick="savePhysicianToLocation()">Save Assignments</button>
+</div>
+</div>
+</div>
+<!-- JS Modules (see js/*.js) -->
+<script src="js/init.js"></script>
+<script src="js/data.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/profile.js"></script>
+<script src="js/modals.js"></script>
+<script src="js/contact.js"></script>
+<script src="js/admin.js"></script>
+<script src="js/views.js"></script>
+
+<div class="modal" id="exportModal">
+<div style="background:white;border-radius:16px;width:100%;max-width:420px;margin:auto;box-shadow:0 20px 25px -5px rgba(0,0,0,0.2);">
+<div style="display:flex;justify-content:space-between;align-items:center;padding:1.5rem;border-bottom:1px solid #e5e5e5;">
+<h2 style="font-size:1.5rem;color:#1e3a8a;">Export Data</h2>
+<button onclick="closeExportModal()" style="background:none;border:none;font-size:2rem;cursor:pointer;color:#999;">&times;</button>
+</div>
+<div style="padding:1.5rem;">
+<p style="color:#666;margin-bottom:1rem;">Download CRM data as CSV files:</p>
+<div style="display:flex;flex-direction:column;gap:0.5rem;">
+<button onclick="closeExportModal();openRoutingExport()" style="display:flex;align-items:center;gap:0.75rem;padding:0.875rem 1rem;background:#fef3c7;border:2px solid #f59e0b;border-radius:10px;cursor:pointer;text-align:left;width:100%;margin-bottom:0.5rem;"><span style="font-size:1.5rem;">🗺️</span><div><strong style="color:#92400e;">Field Routing Export</strong><br><small style="color:#a16207;">NEW &amp; updated HCP-to-address rows for routing sheet. Tracks what's already been exported.</small></div></button>
+<div style="border-top:1px solid #e5e5e5;margin:0.5rem 0;padding-top:0.5rem;"><small style="color:#999;">Full data exports:</small></div>
+<button onclick="exportCSV('providers')" style="display:flex;align-items:center;gap:0.75rem;padding:0.875rem 1rem;background:#f9f9f9;border:2px solid #e5e5e5;border-radius:10px;cursor:pointer;text-align:left;width:100%;"><span style="font-size:1.5rem;">👨‍⚕️</span><div><strong style="color:#1e3a8a;">Providers</strong><br><small style="color:#999;">All providers with practice &amp; location info</small></div></button>
+<button onclick="exportCSV('contacts')" style="display:flex;align-items:center;gap:0.75rem;padding:0.875rem 1rem;background:#f9f9f9;border:2px solid #e5e5e5;border-radius:10px;cursor:pointer;text-align:left;width:100%;"><span style="font-size:1.5rem;">📋</span><div><strong style="color:#1e3a8a;">Contact Logs</strong><br><small style="color:#999;">All activity notes with dates &amp; locations</small></div></button>
+<button onclick="exportCSV('practices')" style="display:flex;align-items:center;gap:0.75rem;padding:0.875rem 1rem;background:#f9f9f9;border:2px solid #e5e5e5;border-radius:10px;cursor:pointer;text-align:left;width:100%;"><span style="font-size:1.5rem;">🏥</span><div><strong style="color:#1e3a8a;">Practices &amp; Locations</strong><br><small style="color:#999;">All practices with location details</small></div></button>
+<button onclick="exportCSV('all')" style="display:flex;align-items:center;gap:0.75rem;padding:0.875rem 1rem;background:#f0fdf4;border:2px solid #1e3a8a;border-radius:10px;cursor:pointer;text-align:left;width:100%;"><span style="font-size:1.5rem;">📦</span><div><strong style="color:#1e3a8a;">Export Everything</strong><br><small style="color:#999;">Downloads all three files at once</small></div></button>
+</div>
+<div id="exportStatus" style="display:none;margin-top:1rem;padding:0.75rem;border-radius:8px;text-align:center;font-size:0.85rem;"></div>
+</div>
+</div>
+</div>
+<div class="modal" id="routingExportModal">
+<div class="modal-content" style="max-width:650px;">
+<div class="modal-header" style="background:#fef3c7;border-radius:16px 16px 0 0;">
+<h2 style="color:#92400e;font-size:1.25rem;">Field Routing Export</h2>
+<button class="close-btn" onclick="closeRoutingExport()">&times;</button>
+</div>
+<div class="modal-body" style="padding:1rem 1.5rem;">
+<div style="display:flex;gap:0.5rem;margin-bottom:1rem;flex-wrap:wrap;">
+<button class="edit-btn" onclick="routingExportNew()" id="routingExportNewBtn" style="background:#f59e0b;flex:1;text-align:center;">Export New Only</button>
+<button class="edit-btn" onclick="routingExportAll()" style="flex:1;text-align:center;">Export All</button>
+<button class="btn-secondary" onclick="routingClearHistory()" style="font-size:0.75rem;">Clear History</button>
+</div>
+<div id="routingExportSummary" style="padding:0.5rem 0.75rem;background:#f0fdf4;border-radius:8px;font-size:0.8rem;color:#166534;margin-bottom:0.75rem;"></div>
+<div id="routingExportList" style="max-height:55vh;overflow-y:auto;"></div>
+</div>
+</div>
+</div>
+<div class="modal" id="taskDetailModal">
+<div class="modal-content">
+<div class="modal-header">
+<h2 id="taskDetailTitle" style="font-size:1.1rem;">Task Details</h2>
+<button class="close-btn" onclick="closeTaskDetailModal()">&times;</button>
+</div>
+<div class="modal-body" id="taskDetailBody"></div>
+</div>
+</div>
+<div class="modal" id="addTaskModal">
+<div class="modal-content">
+<div class="modal-header">
+<h2 id="addTaskModalTitle" style="font-size:1.1rem;">New Follow-Up Task</h2>
+<button class="close-btn" onclick="closeAddTaskModal()">&times;</button>
+</div>
+<div class="modal-body">
+<div id="addTaskContext" style="margin-bottom:1rem;padding:0.6rem 0.75rem;background:#f0f9f4;border-radius:8px;font-size:0.875rem;color:#1a5c45;display:none;"></div>
+<div id="addTaskProviderRow" style="margin-bottom:0.5rem;display:none;">
+<label>Provider (optional)</label>
+<div style="position:relative;">
+<input type="text" id="addTaskProviderSearch" placeholder="Search providers..." autocomplete="off" oninput="filterAddTaskProviders()" style="width:100%;padding:0.75rem;font-size:0.9rem;border:2px solid #e5e5e5;border-radius:8px;box-sizing:border-box;font-family:inherit;">
+<div id="addTaskProviderResults" style="display:none;position:absolute;top:100%;left:0;right:0;background:white;border:1px solid #d1d5db;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.1);z-index:200;max-height:200px;overflow-y:auto;margin-top:2px;"></div>
+</div>
+</div>
+<div id="addTaskPracticeRow" style="margin-bottom:1rem;display:none;">
+<div style="text-align:center;font-size:0.75rem;color:#aaa;margin:0.35rem 0 0.5rem;">— or search by practice —</div>
+<label>Practice / Location (optional)</label>
+<div style="position:relative;">
+<input type="text" id="addTaskPracticeSearch" placeholder="Search practices..." autocomplete="off" oninput="filterAddTaskPractices()" style="width:100%;padding:0.75rem;font-size:0.9rem;border:2px solid #e5e5e5;border-radius:8px;box-sizing:border-box;font-family:inherit;">
+<div id="addTaskPracticeResults" style="display:none;position:absolute;top:100%;left:0;right:0;background:white;border:1px solid #d1d5db;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.1);z-index:200;max-height:200px;overflow-y:auto;margin-top:2px;"></div>
+</div>
+</div>
+<div id="addTaskLocationRow" style="margin-bottom:1rem;display:none;">
+<label>Location (optional)</label>
+<select id="addTaskLocationSelect" onchange="$('addTaskLocationId').value=this.value;_checkAddTaskLinked()" style="width:100%;padding:0.75rem;font-size:0.9rem;border:2px solid #e5e5e5;border-radius:8px;box-sizing:border-box;font-family:inherit;">
+<option value="">No specific location</option>
+</select>
+</div>
+<div id="addTaskUnlinkedWarning" style="display:none;margin-bottom:0.85rem;padding:0.6rem 0.75rem;background:#fffbeb;border:1.5px solid #f59e0b;border-radius:8px;font-size:0.82rem;color:#92400e;">
+⚠️ No provider or location linked — will save as <strong>General Reminder</strong>. Go back and search for a provider or practice if this task is meant for a specific contact.
+</div>
+<div style="margin-bottom:1rem;">
+<label>Task *</label>
+<textarea id="addTaskNote" placeholder="What to follow up on…" rows="3" style="width:100%;padding:0.5rem;font-size:0.9rem;border:1px solid #e5e5e5;border-radius:6px;box-sizing:border-box;font-family:inherit;resize:vertical;"></textarea>
+</div>
+<div style="margin-bottom:1.25rem;">
+<label>Due Date</label>
+<div id="taskDateButtons" style="display:flex;flex-wrap:wrap;gap:0.3rem;margin-bottom:0.3rem;"></div>
+<div id="taskDatePreview" style="font-size:0.8rem;color:#92400e;font-weight:600;min-height:1.2em;"></div>
+<input type="date" id="taskCustomDate" oninput="if(this.value)selectReminderDate(this.value,'','task')" style="margin-top:0.4rem;width:100%;padding:0.5rem 0.6rem;font-size:0.9rem;border:1px solid #d1d5db;border-radius:6px;font-family:inherit;box-sizing:border-box;color:#333;">
+<input type="hidden" id="taskSelectedDate" value="">
+</div>
+<div style="margin-bottom:1rem;">
+<label>Visit Time <span style="font-weight:400;color:#aaa;text-transform:none;letter-spacing:0;">(optional — used for calendar event)</span></label>
+<input type="time" id="addTaskTime" style="width:100%;padding:0.75rem 0.5rem;font-size:0.9rem;border:2px solid #e5e5e5;border-radius:8px;font-family:inherit;box-sizing:border-box;">
+</div>
+<div style="margin-bottom:1rem;">
+<label>Your Name *</label>
+<select id="addTaskAuthor" required style="width:100%;padding:0.75rem 0.5rem;font-size:0.9rem;border:2px solid #e5e5e5;border-radius:8px;font-family:inherit;"><option value="">— select —</option><option value="Tom">Tom</option><option value="Travis">Travis</option></select>
+</div>
+<input type="hidden" id="addTaskPhysicianId" value="">
+<input type="hidden" id="addTaskLocationId" value="">
+<input type="hidden" id="addTaskEditId" value="">
+<button type="button" id="addTaskSaveBtn" class="btn-primary" onclick="saveNewTask()">Save Task</button>
+</div>
+</div>
+</div>
+<!-- Call log banner — non-blocking floating bar, stays visible while browsing CRM during a call -->
+<div id="callLogBanner" style="display:none;position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 0.6rem);left:0.75rem;right:0.75rem;z-index:95;background:#1e3a8a;color:white;border-radius:14px;padding:0.75rem 1rem;align-items:center;gap:0.75rem;box-shadow:0 4px 20px rgba(0,0,0,0.35);">
+<span style="flex:1;font-size:0.9rem;line-height:1.3;">📞 Log call: <strong id="callLogBannerName"></strong></span>
+<button onclick="_confirmCallLog()" style="background:white;color:#1e3a8a;border:none;border-radius:8px;padding:0.45rem 0.9rem;font-weight:700;font-size:0.875rem;cursor:pointer;white-space:nowrap;flex-shrink:0;">Add Note</button>
+<button onclick="_dismissCallPrompt()" style="background:none;border:none;color:rgba(255,255,255,0.75);font-size:1.5rem;line-height:1;cursor:pointer;padding:0 0.1rem;flex-shrink:0;">×</button>
+</div>
+
+</body>
+</html>
