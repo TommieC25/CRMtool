@@ -70,21 +70,8 @@ Append New Records from CSV <input type="file" accept=".csv" onchange="importCSV
 <button style="background:#0ea5e9;color:white;border:none;padding:0.6rem 1rem;border-radius:6px;font-size:0.85rem;cursor:pointer;width:100%;font-weight:600;" onclick="openExportModal()">Export Data</button>
 <h4 style="margin-top:1rem;color:#f97316;">Analytics</h4>
 <button style="background:#f97316;color:white;border:none;padding:0.6rem 1rem;border-radius:6px;font-size:0.85rem;cursor:pointer;width:100%;font-weight:600;" onclick="setView('dashboard')">Territory Dashboard</button>
-<h4 style="margin-top:1rem;color:#3b82f6;">Google Sheet Sync</h4>
-<button style="background:#10b981;color:white;border:none;padding:0.6rem 1rem;border-radius:6px;font-size:0.85rem;cursor:pointer;width:100%;font-weight:600;margin-bottom:0.4rem;" onclick="syncGoogleSheet()">Sync to Google Sheet Now</button>
-<div id="syncSheetStatus" style="font-size:0.75rem;color:#aaa;min-height:1rem;margin-bottom:0.35rem;"></div>
-<div style="font-size:0.7rem;color:#888;margin-bottom:0.2rem;">Web app URL (paste once after deploying Apps Script):</div>
-<input id="sheetSyncUrl" type="url" placeholder="https://script.google.com/macros/s/…/exec" style="width:100%;padding:0.4rem 0.6rem;background:#2a2a3e;color:#ccc;border:1px solid #444;border-radius:6px;font-size:0.72rem;font-family:monospace;margin-bottom:0.25rem;box-sizing:border-box;" oninput="localStorage.setItem('sheetSyncUrl',this.value.trim())">
 <button style="background:#10b981;color:white;border:none;padding:0.6rem 1rem;border-radius:6px;font-size:0.85rem;cursor:pointer;width:100%;font-weight:600;margin-top:1rem;" onclick="resetDemoData()">🔄 Reset Demo Data</button>
 <button class="btn-danger" onclick="clearDatabase()" style="margin-top:0.5rem;">Clear All Data</button>
-<h4 style="margin-top:1rem;color:#a78bfa;">🛠️ DB Tools</h4>
-<div style="display:flex;flex-direction:column;gap:0.4rem;margin-top:0.25rem;">
-<a href="db_audit.html" target="_blank" style="display:block;background:#7c3aed;color:white;padding:0.6rem 1rem;border-radius:6px;font-size:0.85rem;font-weight:600;text-align:center;text-decoration:none;">🔍 DB Audit</a>
-<a href="db_cleanup.html" target="_blank" style="display:block;background:#7c3aed;color:white;padding:0.6rem 1rem;border-radius:6px;font-size:0.85rem;font-weight:600;text-align:center;text-decoration:none;">🧹 DB Cleanup</a>
-<a href="audit_merge_execute.html" target="_blank" style="display:block;background:#7c3aed;color:white;padding:0.6rem 1rem;border-radius:6px;font-size:0.85rem;font-weight:600;text-align:center;text-decoration:none;">🔀 Merge Executor</a>
-<a href="audit_mohs_execute.html" target="_blank" style="display:block;background:#7c3aed;color:white;padding:0.6rem 1rem;border-radius:6px;font-size:0.85rem;font-weight:600;text-align:center;text-decoration:none;">🔪 Audit Executor</a>
-<a href="npi_lookup_v3.html" target="_blank" style="display:block;background:#6d28d9;color:white;padding:0.6rem 1rem;border-radius:6px;font-size:0.85rem;font-weight:600;text-align:center;text-decoration:none;">🔎 NPI Lookup</a>
-</div>
 </div>
 </div>
 <div class="view-tabs">
@@ -128,7 +115,7 @@ Append New Records from CSV <input type="file" accept=".csv" onchange="importCSV
 </div>
 </main>
 </div>
-<!-- SECTION: HTML-MODALS (physicianModal, practiceModal, locationModal, contactModal, exportModal, routingExportModal, assignLocationModal, assignPhysicianModal) -->
+<!-- SECTION: HTML-MODALS (physicianModal, practiceModal, locationModal, contactModal, exportModal, assignLocationModal, assignPhysicianModal) -->
 <div class="modal" id="physicianModal">
 <div class="modal-content">
 <div class="modal-header">
@@ -599,31 +586,12 @@ Add Follow-Up Task after saving
 <div style="padding:1.5rem;">
 <p style="color:#666;margin-bottom:1rem;">Download CRM data as CSV files:</p>
 <div style="display:flex;flex-direction:column;gap:0.5rem;">
-<button onclick="closeExportModal();openRoutingExport()" style="display:flex;align-items:center;gap:0.75rem;padding:0.875rem 1rem;background:#fef3c7;border:2px solid #f59e0b;border-radius:10px;cursor:pointer;text-align:left;width:100%;margin-bottom:0.5rem;"><span style="font-size:1.5rem;">🗺️</span><div><strong style="color:#92400e;">Field Routing Export</strong><br><small style="color:#a16207;">NEW &amp; updated HCP-to-address rows for routing sheet. Tracks what's already been exported.</small></div></button>
-<div style="border-top:1px solid #e5e5e5;margin:0.5rem 0;padding-top:0.5rem;"><small style="color:#999;">Full data exports:</small></div>
 <button onclick="exportCSV('providers')" style="display:flex;align-items:center;gap:0.75rem;padding:0.875rem 1rem;background:#f9f9f9;border:2px solid #e5e5e5;border-radius:10px;cursor:pointer;text-align:left;width:100%;"><span style="font-size:1.5rem;">👨‍⚕️</span><div><strong style="color:#1e3a8a;">Providers</strong><br><small style="color:#999;">All providers with practice &amp; location info</small></div></button>
 <button onclick="exportCSV('contacts')" style="display:flex;align-items:center;gap:0.75rem;padding:0.875rem 1rem;background:#f9f9f9;border:2px solid #e5e5e5;border-radius:10px;cursor:pointer;text-align:left;width:100%;"><span style="font-size:1.5rem;">📋</span><div><strong style="color:#1e3a8a;">Contact Logs</strong><br><small style="color:#999;">All activity notes with dates &amp; locations</small></div></button>
 <button onclick="exportCSV('practices')" style="display:flex;align-items:center;gap:0.75rem;padding:0.875rem 1rem;background:#f9f9f9;border:2px solid #e5e5e5;border-radius:10px;cursor:pointer;text-align:left;width:100%;"><span style="font-size:1.5rem;">🏥</span><div><strong style="color:#1e3a8a;">Practices &amp; Locations</strong><br><small style="color:#999;">All practices with location details</small></div></button>
 <button onclick="exportCSV('all')" style="display:flex;align-items:center;gap:0.75rem;padding:0.875rem 1rem;background:#f0fdf4;border:2px solid #1e3a8a;border-radius:10px;cursor:pointer;text-align:left;width:100%;"><span style="font-size:1.5rem;">📦</span><div><strong style="color:#1e3a8a;">Export Everything</strong><br><small style="color:#999;">Downloads all three files at once</small></div></button>
 </div>
 <div id="exportStatus" style="display:none;margin-top:1rem;padding:0.75rem;border-radius:8px;text-align:center;font-size:0.85rem;"></div>
-</div>
-</div>
-</div>
-<div class="modal" id="routingExportModal">
-<div class="modal-content" style="max-width:650px;">
-<div class="modal-header" style="background:#fef3c7;border-radius:16px 16px 0 0;">
-<h2 style="color:#92400e;font-size:1.25rem;">Field Routing Export</h2>
-<button class="close-btn" onclick="closeRoutingExport()">&times;</button>
-</div>
-<div class="modal-body" style="padding:1rem 1.5rem;">
-<div style="display:flex;gap:0.5rem;margin-bottom:1rem;flex-wrap:wrap;">
-<button class="edit-btn" onclick="routingExportNew()" id="routingExportNewBtn" style="background:#f59e0b;flex:1;text-align:center;">Export New Only</button>
-<button class="edit-btn" onclick="routingExportAll()" style="flex:1;text-align:center;">Export All</button>
-<button class="btn-secondary" onclick="routingClearHistory()" style="font-size:0.75rem;">Clear History</button>
-</div>
-<div id="routingExportSummary" style="padding:0.5rem 0.75rem;background:#f0fdf4;border-radius:8px;font-size:0.8rem;color:#166534;margin-bottom:0.75rem;"></div>
-<div id="routingExportList" style="max-height:55vh;overflow-y:auto;"></div>
 </div>
 </div>
 </div>

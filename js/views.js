@@ -593,42 +593,23 @@ else territoryMap.invalidateSize();
 
 let myLocationMarker = null;
 let myLocationCircle = null;
-let _myLocWatchId = null;
+const DEMO_HOME = [39.7392, -104.9903]; // Denver, CO — demo territory center
 function haversineMiles(lat1,lon1,lat2,lon2){const R=3958.8;const dLat=(lat2-lat1)*Math.PI/180;const dLon=(lon2-lon1)*Math.PI/180;const a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}
 function locateOnMap() {
 if (!territoryMap) { showToast('Open the map first', 'info'); return; }
-if (!navigator.geolocation) { showToast('Geolocation not supported by this browser', 'error'); return; }
-// Cancel any in-progress watch
-if (_myLocWatchId !== null) { navigator.geolocation.clearWatch(_myLocWatchId); _myLocWatchId = null; }
-showToast('Getting your location…', 'info');
-let _firstFix = true;
-let _stopTimer = null;
-_myLocWatchId = navigator.geolocation.watchPosition(pos => {
-const acc = pos.coords.accuracy; // metres
-const latlng = [pos.coords.latitude, pos.coords.longitude];
+const latlng = DEMO_HOME;
 if (myLocationMarker) myLocationMarker.remove();
 if (myLocationCircle) myLocationCircle.remove();
 const icon = L.divIcon({className:'', html:'<div style="width:18px;height:18px;background:#2563eb;border:3px solid white;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.4);"></div>', iconSize:[18,18], iconAnchor:[9,9]});
-myLocationMarker = L.marker(latlng, {icon}).addTo(territoryMap).bindPopup('<strong>Your Location</strong><br><span style="font-size:0.8rem;color:#666;">±'+Math.round(acc)+'m accuracy</span>').openPopup();
+myLocationMarker = L.marker(latlng, {icon}).addTo(territoryMap).bindPopup('<strong>Territory Home Base</strong><br><span style="font-size:0.8rem;color:#666;">Denver, CO</span>').openPopup();
 myLocationCircle = L.circle(latlng, {radius:16093, color:'#2563eb', fillColor:'#2563eb', fillOpacity:0.06, weight:1, dashArray:'6,4'}).addTo(territoryMap);
-if (_firstFix) {
-_firstFix = false;
-const nearby=_mapBuiltMarkers.filter(m=>haversineMiles(latlng[0],latlng[1],m.lat,m.lng)<=10);
-if(nearby.length){const bounds=[[latlng[0],latlng[1]],...nearby.map(m=>[m.lat,m.lng])];territoryMap.fitBounds(bounds,{padding:[50,50]});}else{territoryMap.setView(latlng,13);}
+const nearby = _mapBuiltMarkers.filter(m => haversineMiles(latlng[0], latlng[1], m.lat, m.lng) <= 10);
+if (nearby.length) {
+const bounds = [[latlng[0],latlng[1]], ...nearby.map(m=>[m.lat,m.lng])];
+territoryMap.fitBounds(bounds, {padding:[50,50]});
+showToast(nearby.length+' location'+(nearby.length!==1?'s':'')+' within 10 mi', 'info');
+} else {
+territoryMap.setView(latlng, 11);
+showToast('Territory center — Denver, CO', 'info');
 }
-// Stop watching once GPS locks in tight (≤20m) or after 15s max
-if (acc <= 20) {
-navigator.geolocation.clearWatch(_myLocWatchId); _myLocWatchId = null;
-if (_stopTimer) { clearTimeout(_stopTimer); _stopTimer = null; }
-showToast('Location locked (±'+Math.round(acc)+'m)', 'success');
-} else if (!_stopTimer) {
-_stopTimer = setTimeout(() => {
-if (_myLocWatchId !== null) { navigator.geolocation.clearWatch(_myLocWatchId); _myLocWatchId = null; }
-showToast('Location set (±'+Math.round(acc)+'m)', 'info');
-}, 15000);
-}
-}, err => {
-showToast('Could not get location: ' + err.message, 'error');
-if (_myLocWatchId !== null) { navigator.geolocation.clearWatch(_myLocWatchId); _myLocWatchId = null; }
-}, {enableHighAccuracy: true, timeout: 20000, maximumAge: 0});
 }
