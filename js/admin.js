@@ -357,3 +357,93 @@ localStorage.removeItem('routingExportHistory');
 showToast('Export history cleared', 'info');
 openRoutingExport();
 }
+
+// --- Target Review ---
+let _trFilter = 'all'; // 'all' | 'yes' | 'no'
+
+function openTargetReview() {
+  _trFilter = 'all';
+  $('targetReviewModal').classList.add('active');
+  renderTargetReviewList();
+}
+
+function setTargetFilter(f) {
+  _trFilter = f;
+  ['all','yes','no'].forEach(k => {
+    const btn = $('trFilter' + k.charAt(0).toUpperCase() + k.slice(1));
+    if (btn) { btn.style.background = k === f ? '#1e3a8a' : '#e5e5e5'; btn.style.color = k === f ? 'white' : '#555'; }
+  });
+  renderTargetReviewList();
+}
+
+function renderTargetReviewList() {
+  const list = $('targetReviewList');
+  const stats = $('targetReviewStats');
+  if (!list) return;
+  const total = physicians.length;
+  const targets = physicians.filter(p => p.is_target).length;
+  if (stats) stats.textContent = `${targets} of ${total} marked as targets`;
+  let filtered = physicians;
+  if (_trFilter === 'yes') filtered = physicians.filter(p => p.is_target);
+  else if (_trFilter === 'no') filtered = physicians.filter(p => !p.is_target);
+  const tierOrder = ['1','2','3','4','5',''];
+  const byTier = {};
+  tierOrder.forEach(t => byTier[t] = []);
+  filtered.forEach(p => { const t = normPriority(p.priority) || ''; if (!byTier[t]) byTier[t] = []; byTier[t].push(p); });
+  let html = '';
+  tierOrder.forEach(tier => {
+    const group = byTier[tier] || [];
+    if (!group.length) return;
+    const tierLabel = tier ? `P${tier}` : 'No Tier';
+    const tierColor = tier === '1' ? '#dc2626' : tier === '2' ? '#f97316' : tier === '3' ? '#f59e0b' : tier === '4' ? '#6366f1' : '#9ca3af';
+    html += `<div style="padding:0.4rem 1rem 0.2rem;font-size:0.7rem;font-weight:800;color:${tierColor};text-transform:uppercase;letter-spacing:1px;background:#fafafa;border-top:1px solid #f0f0f0;border-bottom:1px solid #f0f0f0;">${tierLabel} — ${group.length} provider${group.length !== 1 ? 's' : ''}</div>`;
+    group.forEach(p => {
+      const pracName = (() => { const asgn = physicianAssignments[p.id]; if (!asgn || !asgn.length) return ''; const loc = asgn[0].practice_locations || practiceLocations.find(l => l.id === asgn[0].practice_location_id); return loc?.practices?.name || getPracticeName(loc?.practice_id) || ''; })();
+      const city = (() => { const asgn = physicianAssignments[p.id]; if (!asgn || !asgn.length) return ''; const loc = asgn[0].practice_locations || practiceLocations.find(l => l.id === asgn[0].practice_location_id); return loc?.city || ''; })();
+      const isTarget = !!p.is_target;
+      const btnStyle = isTarget ? 'background:#10b981;color:white;border:2px solid #10b981;' : 'background:#f3f4f6;color:#9ca3af;border:2px solid #e5e7eb;';
+      const btnLabel = isTarget ? '✓ TARGET' : '✗ SKIP';
+      html += `<div style="display:flex;align-items:center;gap:0.75rem;padding:0.7rem 1rem;border-bottom:1px solid #f5f5f5;${!isTarget ? 'opacity:0.65;' : ''}">
+<div style="flex:1;min-width:0;">
+<div style="font-weight:700;font-size:0.9rem;color:#1e3a8a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${fmtName(p)}</div>
+<div style="font-size:0.75rem;color:#666;margin-top:0.1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.specialty || ''}${pracName ? ' · ' + pracName : ''}${city ? ' · ' + city : ''}</div>
+</div>
+<button id="trBtn-${p.id}" onclick="toggleReviewTarget('${p.id}')" style="flex-shrink:0;padding:0.45rem 0.8rem;border-radius:8px;font-size:0.78rem;font-weight:800;cursor:pointer;min-width:80px;text-align:center;touch-action:manipulation;-webkit-tap-highlight-color:transparent;${btnStyle}">${btnLabel}</button>
+</div>`;
+    });
+  });
+  if (!html) html = '<div style="padding:2rem;text-align:center;color:#999;">No providers match this filter.</div>';
+  list.innerHTML = html;
+}
+
+async function toggleReviewTarget(id) {
+  const p = physicians.find(ph => ph.id === id);
+  if (!p) return;
+  const newVal = !p.is_target;
+  const btn = $('trBtn-' + id);
+  if (btn) {
+    btn.style.background = newVal ? '#10b981' : '#f3f4f6';
+    btn.style.color = newVal ? 'white' : '#9ca3af';
+    btn.style.borderColor = newVal ? '#10b981' : '#e5e7eb';
+    btn.textContent = newVal ? '✓ TARGET' : '✗ SKIP';
+    btn.parentElement.style.opacity = newVal ? '1' : '0.65';
+  }
+  const { error } = await db.from('providers').update({ is_target: newVal }).eq('id', id);
+  if (error) {
+    showToast('Error: ' + error.message, 'error');
+    if (btn) {
+      btn.style.background = p.is_target ? '#10b981' : '#f3f4f6';
+      btn.style.color = p.is_target ? 'white' : '#9ca3af';
+      btn.style.borderColor = p.is_target ? '#10b981' : '#e5e7eb';
+      btn.textContent = p.is_target ? '✓ TARGET' : '✗ SKIP';
+      btn.parentElement.style.opacity = p.is_target ? '1' : '0.65';
+    }
+    return;
+  }
+  p.is_target = newVal;
+  const idx = physicians.findIndex(ph => ph.id === id);
+  if (idx >= 0) physicians[idx].is_target = newVal;
+  saveCrmCache();
+  const statsEl = $('targetReviewStats');
+  if (statsEl) { const t = physicians.filter(ph => ph.is_target).length; statsEl.textContent = `${t} of ${physicians.length} marked as targets`; }
+}

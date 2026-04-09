@@ -20,6 +20,7 @@ let currentView = 'physicians';
 let _prevView = null;
 let sortBy = 'name';
 let filterTier = null;
+let filterTarget = false;
 let currentLocationId = null;
 let editMode = false;
 let editingContactId = null;
@@ -44,8 +45,8 @@ if (_goto.get('goto') === 'practice' && _goto.get('id')) {
   setView('physicians');
   viewPhysician(_goto.get('id'));
 } else {
-  activitySubTab = 'tasks'; // default landing: Tasks view
-  setView('activity');
+  setView('physicians'); // HCP list in sidebar
+  renderEmptyState();    // tasks/reminders in main content
 }
 // iOS body scroll lock — prevents background scroll when any modal is open
 // On iOS Safari (especially standalone/Home Screen), position:fixed modals

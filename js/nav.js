@@ -159,16 +159,21 @@ renderEmptyState();
 
 function setSortBy(sort) {
 sortBy = sort;
-['Name','City','Zip','Tier'].forEach(s => $('sort'+s).classList.remove('active'));
+['Name','City','Zip'].forEach(s => $('sort'+s).classList.remove('active'));
 $('sort' + sort.charAt(0).toUpperCase() + sort.slice(1)).classList.add('active');
 renderList();
 }
 function setFilterTier(tier) {
-filterTier = tier;
-document.querySelectorAll('#tierFilterControls .sort-btn').forEach(btn => btn.classList.remove('active'));
-$('filterAll').classList.toggle('active', !tier);
-if (tier) $('filterT' + tier).classList.add('active');
-renderList();
+  // Tap the active tier again to deselect it
+  filterTier = (filterTier === tier) ? null : tier;
+  document.querySelectorAll('#tierFilterControls .sort-btn').forEach(btn => btn.classList.remove('active'));
+  if (filterTier) $('filterT' + filterTier).classList.add('active');
+  renderList();
+}
+function toggleFilterTarget() {
+  filterTarget = !filterTarget;
+  $('filterTarget').classList.toggle('active', filterTarget);
+  renderList();
 }
 
 // --- Sidebar ---
@@ -333,6 +338,7 @@ function normPriority(val) {
 // --- Filter / list rendering ---
 function getFilteredPhysicians(search) {
 let base = filterTier ? physicians.filter(p => normPriority(p.priority) === filterTier) : physicians;
+if (filterTarget) base = base.filter(p => !!p.is_target);
 if (!search) return base;
 return base.filter(p => {
 const np = normPriority(p.priority);
@@ -392,6 +398,10 @@ const assignments = physicianAssignments[p.id] || [];
 const primaryAssign = assignments.find(a => a.is_primary) || assignments[0];
 const pLoc = primaryAssign?.practice_locations || (primaryAssign ? practiceLocations.find(l => l.id === primaryAssign.practice_location_id) : null) || {};
 const cityDisplay = pLoc.city || '';
+const zipDisplay = pLoc.zip || '';
+const locBadgeText = sortBy === 'zip'
+  ? (zipDisplay && cityDisplay ? `${cityDisplay} ${zipDisplay}` : zipDisplay || cityDisplay)
+  : cityDisplay;
 const practiceName = pLoc.practices?.name || getPracticeName(pLoc.practice_id) || p.practice_name || '';
 const locationCount = assignments.length;
 const tierStyles={'1':'background:#ef4444;color:white','2':'background:#f97316;color:white','3':'background:#3b82f6;color:white','4':'background:#8b5cf6;color:white','5':'background:#64748b;color:white'};
@@ -406,7 +416,7 @@ onclick="viewPhysician('${p.id}')">
 <div class="practice">${practiceName}</div>
 ${tierBadge}
 ${mobileBadge}
-${!p.is_mobile && cityDisplay ? `<span class="city-badge">${cityDisplay}</span>` : ''}
+${!p.is_mobile && locBadgeText ? `<span class="city-badge">${locBadgeText}</span>` : ''}
 ${locationCount > 1 ? `<span class="city-badge">+${locationCount - 1} more</span>` : ''}
 </li>
 `}).join('');
