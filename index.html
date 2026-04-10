@@ -58,6 +58,8 @@ body{padding-top:24px;}
 <div class="admin-panel" id="adminPanel">
 <h4>Database Management</h4>
 <p style="color:#aaa;font-size:0.8rem;margin-bottom:0.75rem;">Add new records to the existing database, or manage all data.</p>
+<button onclick="openCardScan()" style="background:#6366f1;color:white;border:none;padding:0.75rem 1rem;border-radius:8px;font-weight:700;text-align:center;cursor:pointer;font-size:0.95rem;width:100%;margin-bottom:0.5rem;">📷 Scan Business Card / Screenshot</button>
+<input type="file" id="cardScanInput" accept="image/*" style="display:none" onchange="handleCardScan(this)">
 <label style="display:block;margin-bottom:0.5rem;padding:0.75rem;background:#3b82f6;color:white;border-radius:8px;font-weight:600;text-align:center;cursor:pointer;font-size:0.95rem;">
 Append New Records from CSV <input type="file" accept=".csv" onchange="importCSV(this.files[0])" style="display:none">
 </label>
@@ -687,6 +689,46 @@ Add Follow-Up Task after saving
 <p>Enter your name so your activity notes are attributed correctly. This is saved on your device.</p>
 <input type="text" id="namePromptInput" placeholder="e.g. Jane Smith" maxlength="40" autocomplete="name">
 <button class="btn-primary" onclick="saveUserName()">Start Exploring →</button>
+</div>
+</div>
+</div>
+<!-- Card / Screenshot Scan Review Modal -->
+<div class="modal" id="cardScanModal">
+<div class="modal-content" style="max-width:600px;max-height:95vh;overflow-y:auto;-webkit-overflow-scrolling:touch;">
+<div class="modal-header" style="background:#6366f1;color:white;border-radius:16px 16px 0 0;flex-shrink:0;position:sticky;top:0;z-index:2;">
+<div><h2 style="color:white;font-size:1.1rem;margin:0;">📷 Scan Review</h2><div style="font-size:0.75rem;color:rgba(255,255,255,0.8);margin-top:0.15rem;">Correct any errors, then save</div></div>
+<button class="close-btn" style="color:white;" onclick="closeModal('cardScanModal')">×</button>
+</div>
+<div style="padding:1rem;">
+<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:1rem;margin-bottom:1rem;">
+<h4 style="color:#1e3a8a;margin:0 0 0.75rem;font-size:0.95rem;">👤 Provider</h4>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;">
+<div><label style="font-size:0.75rem;font-weight:700;color:#555;display:block;margin-bottom:0.2rem;">First Name</label><input id="scanFirstName" style="width:100%;padding:0.45rem 0.6rem;border:1px solid #ccc;border-radius:6px;font-size:0.9rem;box-sizing:border-box;" placeholder="First"></div>
+<div><label style="font-size:0.75rem;font-weight:700;color:#555;display:block;margin-bottom:0.2rem;">Last Name</label><input id="scanLastName" style="width:100%;padding:0.45rem 0.6rem;border:1px solid #ccc;border-radius:6px;font-size:0.9rem;box-sizing:border-box;" placeholder="Last"></div>
+<div><label style="font-size:0.75rem;font-weight:700;color:#555;display:block;margin-bottom:0.2rem;">Degree</label><select id="scanDegree" style="width:100%;padding:0.45rem 0.6rem;border:1px solid #ccc;border-radius:6px;font-size:0.9rem;box-sizing:border-box;"><option value="">— degree —</option><option>MD</option><option>DO</option><option>DPM</option><option>PA-C</option><option>NP</option><option>RN</option><option>PhD</option><option>Other</option></select></div>
+<div><label style="font-size:0.75rem;font-weight:700;color:#555;display:block;margin-bottom:0.2rem;">Title / Role</label><input id="scanTitle" style="width:100%;padding:0.45rem 0.6rem;border:1px solid #ccc;border-radius:6px;font-size:0.9rem;box-sizing:border-box;" placeholder="e.g. Wound Care Specialist"></div>
+<div><label style="font-size:0.75rem;font-weight:700;color:#555;display:block;margin-bottom:0.2rem;">Specialty</label><select id="scanSpecialty" style="width:100%;padding:0.45rem 0.6rem;border:1px solid #ccc;border-radius:6px;font-size:0.9rem;box-sizing:border-box;"><option value="">— specialty —</option><option>Podiatry</option><option>Wound Care</option><option>Dermatology</option><option>Other</option><option>Staff</option></select></div>
+<div><label style="font-size:0.75rem;font-weight:700;color:#555;display:block;margin-bottom:0.2rem;">Email</label><input id="scanEmail" type="email" style="width:100%;padding:0.45rem 0.6rem;border:1px solid #ccc;border-radius:6px;font-size:0.9rem;box-sizing:border-box;" placeholder="dr@practice.com"></div>
+<div style="grid-column:1/-1"><label style="font-size:0.75rem;font-weight:700;color:#555;display:block;margin-bottom:0.2rem;">Mobile Phone</label><input id="scanMobile" type="tel" style="width:100%;padding:0.45rem 0.6rem;border:1px solid #ccc;border-radius:6px;font-size:0.9rem;box-sizing:border-box;" placeholder="305-555-1234"></div>
+</div>
+</div>
+<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:1rem;margin-bottom:1rem;">
+<h4 style="color:#1d4ed8;margin:0 0 0.75rem;font-size:0.95rem;">🏥 Practice &amp; Location</h4>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;">
+<div style="grid-column:1/-1"><label style="font-size:0.75rem;font-weight:700;color:#555;display:block;margin-bottom:0.2rem;">Practice Name</label><input id="scanPracticeName" style="width:100%;padding:0.45rem 0.6rem;border:1px solid #ccc;border-radius:6px;font-size:0.9rem;box-sizing:border-box;" placeholder="Practice or Group Name"></div>
+<div style="grid-column:1/-1"><label style="font-size:0.75rem;font-weight:700;color:#555;display:block;margin-bottom:0.2rem;">Address</label><input id="scanAddress" style="width:100%;padding:0.45rem 0.6rem;border:1px solid #ccc;border-radius:6px;font-size:0.9rem;box-sizing:border-box;" placeholder="123 Main St #200"></div>
+<div><label style="font-size:0.75rem;font-weight:700;color:#555;display:block;margin-bottom:0.2rem;">City</label><input id="scanCity" style="width:100%;padding:0.45rem 0.6rem;border:1px solid #ccc;border-radius:6px;font-size:0.9rem;box-sizing:border-box;" placeholder="Denver"></div>
+<div><label style="font-size:0.75rem;font-weight:700;color:#555;display:block;margin-bottom:0.2rem;">ZIP</label><input id="scanZip" style="width:100%;padding:0.45rem 0.6rem;border:1px solid #ccc;border-radius:6px;font-size:0.9rem;box-sizing:border-box;" placeholder="80202"></div>
+<div><label style="font-size:0.75rem;font-weight:700;color:#555;display:block;margin-bottom:0.2rem;">Office Phone</label><input id="scanPhone" type="tel" style="width:100%;padding:0.45rem 0.6rem;border:1px solid #ccc;border-radius:6px;font-size:0.9rem;box-sizing:border-box;" placeholder="303-555-1234"></div>
+<div><label style="font-size:0.75rem;font-weight:700;color:#555;display:block;margin-bottom:0.2rem;">Fax</label><input id="scanFax" type="tel" style="width:100%;padding:0.45rem 0.6rem;border:1px solid #ccc;border-radius:6px;font-size:0.9rem;box-sizing:border-box;" placeholder="303-555-5678"></div>
+<div style="grid-column:1/-1"><label style="font-size:0.75rem;font-weight:700;color:#555;display:block;margin-bottom:0.2rem;">Website</label><input id="scanWebsite" style="width:100%;padding:0.45rem 0.6rem;border:1px solid #ccc;border-radius:6px;font-size:0.9rem;box-sizing:border-box;" placeholder="www.practice.com"></div>
+</div>
+</div>
+<div id="scanSaveStatus" style="font-size:0.8rem;color:#dc2626;min-height:1.2em;margin-bottom:0.5rem;"></div>
+<div style="display:flex;gap:0.75rem;">
+<button onclick="saveScanResult()" style="flex:1;padding:0.7rem;background:#1e3a8a;color:white;border:none;border-radius:8px;font-weight:700;font-size:1rem;cursor:pointer;">Save to CRM</button>
+<button onclick="closeModal('cardScanModal')" style="flex:0 0 auto;padding:0.7rem 1.2rem;background:#f3f4f6;color:#374151;border:1px solid #d1d5db;border-radius:8px;font-weight:600;cursor:pointer;">Cancel</button>
+</div>
 </div>
 </div>
 </div>

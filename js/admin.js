@@ -447,3 +447,193 @@ async function toggleReviewTarget(id) {
   const statsEl = $('targetReviewStats');
   if (statsEl) { const t = physicians.filter(ph => ph.is_target).length; statsEl.textContent = `${t} of ${physicians.length} marked as targets`; }
 }
+
+// ============================================================
+// === CARD / SCREENSHOT SCAN (Claude vision API) ===
+// ============================================================
+
+function openCardScan() {
+  const inp = $('cardScanInput');
+  if (!inp) return;
+  inp.value = '';
+  inp.click();
+}
+
+async function handleCardScan(input) {
+  const file = input.files[0];
+  if (!file) return;
+  input.value = '';
+  if (!ANTHROPIC_API_KEY || ANTHROPIC_API_KEY === 'YOUR_ANTHROPIC_KEY_HERE') {
+    showToast('Add your Anthropic API key to js/init.js first', 'error');
+    return;
+  }
+  showToast('Scanning — this takes a few seconds…', 'info');
+  try {
+    const { base64, type } = await _compressScanImage(file);
+    const extracted = await _callScanAPI(base64, type);
+    _openScanReview(extracted);
+  } catch(e) {
+    console.error('Card scan error:', e);
+    showToast('Scan failed: ' + e.message, 'error');
+  }
+}
+
+async function _compressScanImage(file) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const MAX = 1400;
+      let w = img.width, h = img.height;
+      if (w > MAX || h > MAX) {
+        if (w >= h) { h = Math.round(h * MAX / w); w = MAX; }
+        else { w = Math.round(w * MAX / h); h = MAX; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      canvas.toBlob(blob => {
+        const reader = new FileReader();
+        reader.onload = e => resolve({ base64: e.target.result.split(',')[1], type: 'image/jpeg' });
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      }, 'image/jpeg', 0.88);
+    };
+    img.onerror = reject;
+    img.src = url;
+  });
+}
+
+async function _callScanAPI(base64, mimeType) {
+  const prompt = `Extract provider/practitioner information from this business card or medical website screenshot for a wound care CRM. Return ONLY a JSON object — no markdown, no extra text, no explanation.
+
+Required fields (use empty string "" for anything not visible):
+{"first_name":"","last_name":"","degree":"","title":"","specialty":"","email":"","mobile_phone":"","practice_name":"","address":"","city":"","zip":"","phone":"","fax":"","website":""}
+
+Rules:
+- degree: MD, DO, DPM, PA-C, NP, RN, PhD, or other credential after the name
+- specialty: choose one of Podiatry, Wound Care, Dermatology, Other, or Staff
+- title: role/position (e.g. "Wound Care Specialist", "Mohs Surgeon", "Office Manager")
+- phone/fax/mobile: digits and dashes only, no parens
+- address: street only, no city/state/zip
+- If multiple phone numbers, put office line in phone and mobile in mobile_phone`;
+
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'x-api-key': ANTHROPIC_API_KEY,
+      'anthropic-version': '2023-06-01',
+      'content-type': 'application/json',
+      'anthropic-dangerous-direct-browser-calls': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 512,
+      messages: [{ role: 'user', content: [
+        { type: 'image', source: { type: 'base64', media_type: mimeType, data: base64 } },
+        { type: 'text', text: prompt }
+      ]}]
+    })
+  });
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({}));
+    throw new Error(err.error?.message || 'API error ' + resp.status);
+  }
+  const data = await resp.json();
+  const raw = (data.content[0]?.text || '').trim();
+  const clean = raw.replace(/^```json?\s*/i, '').replace(/```\s*$/, '').trim();
+  return JSON.parse(clean);
+}
+
+function _openScanReview(d) {
+  const set = (id, val) => { const el = $(id); if (el) el.value = val || ''; };
+  set('scanFirstName', d.first_name);
+  set('scanLastName', d.last_name);
+  set('scanTitle', d.title);
+  set('scanEmail', d.email);
+  set('scanMobile', d.mobile_phone);
+  set('scanPracticeName', d.practice_name);
+  set('scanAddress', normalizeAddr(d.address));
+  set('scanCity', d.city);
+  set('scanZip', d.zip);
+  set('scanPhone', d.phone);
+  set('scanFax', d.fax);
+  set('scanWebsite', d.website);
+  const deg = $('scanDegree');
+  if (deg) { const opts = Array.from(deg.options); const match = opts.find(o => o.value.toLowerCase() === (d.degree||'').toLowerCase()); deg.value = match ? match.value : ''; }
+  const spec = $('scanSpecialty');
+  if (spec) { const opts = Array.from(spec.options); const match = opts.find(o => o.value.toLowerCase() === (d.specialty||'').toLowerCase()); spec.value = match ? match.value : ''; }
+  if ($('scanSaveStatus')) $('scanSaveStatus').textContent = '';
+  $('cardScanModal').classList.add('active');
+}
+
+async function saveScanResult() {
+  const firstName = ($('scanFirstName').value || '').trim();
+  const lastName = ($('scanLastName').value || '').trim();
+  if (!firstName && !lastName) { showToast('First or last name required', 'error'); return; }
+  const statusEl = $('scanSaveStatus');
+  const status = s => { if (statusEl) statusEl.textContent = s; };
+  status('Saving…');
+  updateSyncIndicators('syncing');
+  try {
+    const practiceName = ($('scanPracticeName').value || '').trim();
+    const address = normalizeAddr($('scanAddress').value);
+    const city = ($('scanCity').value || '').trim();
+    const zip = ($('scanZip').value || '').trim();
+    const phone = ($('scanPhone').value || '').trim();
+    const fax = ($('scanFax').value || '').trim();
+    const website = ($('scanWebsite').value || '').trim();
+    let practiceId = null;
+    if (practiceName) {
+      const { data: ex } = await db.from('practices').select('id').ilike('name', practiceName).limit(1);
+      if (ex && ex.length > 0) { practiceId = ex[0].id; }
+      else {
+        const { data: np, error: pe } = await db.from('practices').insert({ name: practiceName, website }).select().single();
+        if (pe) throw pe;
+        practiceId = np.id; practices.push(np);
+      }
+    }
+    let locationId = null;
+    if (practiceId || address || city) {
+      let existLoc = null;
+      if (practiceId && address) {
+        const { data: el } = await db.from('practice_locations').select('id').eq('practice_id', practiceId).ilike('address', address).limit(1);
+        if (el && el.length > 0) existLoc = el[0];
+      }
+      if (!existLoc) {
+        const { data: nl, error: le } = await db.from('practice_locations').insert({
+          practice_id: practiceId, label: city || practiceName || 'Office',
+          address, city, zip, phone, fax
+        }).select().single();
+        if (le) throw le;
+        locationId = nl.id; practiceLocations.push(nl);
+      } else { locationId = existLoc.id; }
+    }
+    const { data: newProv, error: provErr } = await db.from('providers').insert({
+      first_name: firstName, last_name: lastName,
+      degree: ($('scanDegree').value || '').trim(),
+      title: ($('scanTitle').value || '').trim(),
+      specialty: ($('scanSpecialty').value || '').trim(),
+      email: ($('scanEmail').value || '').trim(),
+      mobile_phone: ($('scanMobile').value || '').trim(),
+      is_target: true
+    }).select().single();
+    if (provErr) throw provErr;
+    physicians.push(newProv);
+    if (locationId) {
+      await db.from('provider_location_assignments').insert({
+        provider_id: newProv.id, practice_location_id: locationId, is_primary: true
+      });
+    }
+    saveCrmCache(); renderList(); updateSyncIndicators('synced');
+    closeModal('cardScanModal');
+    showToast(`${firstName} ${lastName} added to CRM ✓`, 'success');
+    setTimeout(() => { setView('physicians'); viewPhysician(newProv.id); }, 350);
+  } catch(e) {
+    console.error('Scan save error:', e);
+    status('Error: ' + e.message);
+    showToast('Save failed: ' + e.message, 'error');
+    updateSyncIndicators('error');
+  }
+}
