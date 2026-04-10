@@ -116,7 +116,7 @@ function initDemoUserName() {
   const fill = () => {
     const n = localStorage.getItem('lastCallLogAuthor') || '';
     if ($('authorName') && !$('authorName').value) $('authorName').value = n;
-    if ($('addTaskAuthor') && !$('addTaskAuthor').value) $('addTaskAuthor').value = n;
+    // addTaskAuthor is a <select> populated at modal-open time — no prefill needed here
   };
   document.addEventListener('click', fill);
   fill();

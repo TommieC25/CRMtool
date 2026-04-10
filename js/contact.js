@@ -1,5 +1,24 @@
 // === js/contact.js === Contact modal, note editing, reminder completion, admin panel toggle
 
+// Populate an author <select> with known reps + current user, pre-selecting `selected`
+function _populateAuthorSelect(selectId, selected) {
+  const el = $(selectId);
+  if (!el) return;
+  const currentUser = localStorage.getItem('lastCallLogAuthor') || '';
+  // Combine: known authors from DB + current user; deduplicate and sort
+  const known = (typeof _knownAuthors !== 'undefined' ? _knownAuthors : []);
+  const all = [...new Set([...known, currentUser].filter(Boolean))].sort();
+  // If nobody known yet, fall back to current user only
+  const opts = all.length > 0 ? all : (currentUser ? [currentUser] : []);
+  el.innerHTML = '<option value="">— select rep —</option>' +
+    opts.map(n => `<option value="${n}"${n === (selected || currentUser) ? ' selected' : ''}>${n}</option>`).join('');
+  // If selected author isn't in the list (old data), add them
+  if (selected && !opts.includes(selected)) {
+    el.innerHTML += `<option value="${selected}" selected>${selected}</option>`;
+    el.value = selected;
+  }
+}
+
 function prefixNote(prefix){const ta=$('contactNotes');if(!ta.value.startsWith('Call: ')&&!ta.value.startsWith('Visit: ')&&!ta.value.startsWith('Email: ')){ta.value=prefix+ta.value;}else{ta.value=ta.value.replace(/^(Call|Visit|Email): /,prefix);}ta.focus();const row=$('alsoAttendedRow');if(row){row.style.display=(prefix==='Visit: ')?'block':'none';if(prefix!=='Visit: '){const det=$('alsoAttendedDetails');if(det)det.style.display='none';const sp=$('staffPresent');if(sp)sp.value='';}}}
 
 function openContactModal() {
@@ -355,7 +374,7 @@ function openAddTaskModal(physicianId, locationId) {
 const _sb=$('addTaskSaveBtn');if(_sb){_sb.textContent='Save Task';_sb.className='btn-primary';}
 if($('addTaskEditId'))$('addTaskEditId').value = '';
 $('addTaskNote').value = '';
-if($('addTaskAuthor'))$('addTaskAuthor').value = '';
+_populateAuthorSelect('addTaskAuthor', '');
 if($('addTaskTime'))$('addTaskTime').value = '';
 $('addTaskPhysicianId').value = physicianId || '';
 $('addTaskLocationId').value = locationId || '';
@@ -492,7 +511,7 @@ const _sb=$('addTaskSaveBtn');if(_sb){_sb.textContent='Save Task';_sb.className=
 const _ctx=$('addTaskContext');if(_ctx){_ctx.innerHTML='';_ctx.style.display='none';}
 const _sel=$('addTaskLocationSelect');if(_sel)_sel.innerHTML='<option value="">No specific location</option>';
 const _dp=$('taskDatePreview');if(_dp)_dp.textContent='';
-if($('addTaskAuthor'))$('addTaskAuthor').value='';
+_populateAuthorSelect('addTaskAuthor', '');
 $('addTaskModalTitle').textContent='Edit Task';
 // ── Populate from record ─────────────────────────────────────────────────────
 const tm = (rec.notes||'').match(/^\[(\d{1,2}:\d{2})\]\s*/);
@@ -506,7 +525,7 @@ $('addTaskLocationId').value = rec.practice_location_id || '';
 if($('addTaskProviderRow'))$('addTaskProviderRow').style.display='block';
 if(rec.provider_id){selectAddTaskProvider(rec.provider_id);if(rec.practice_location_id&&$('addTaskLocationSelect')){$('addTaskLocationSelect').value=rec.practice_location_id;$('addTaskLocationId').value=rec.practice_location_id;if(_ctx){_ctx.innerHTML=_buildTaskContext(rec.provider_id,rec.practice_location_id);_ctx.style.display='block';}}}
 else{if(_ctx){_ctx.innerHTML=_buildTaskContext(null,rec.practice_location_id);_ctx.style.display=rec.practice_location_id?'block':'none';}}
-if($('addTaskAuthor'))$('addTaskAuthor').value=rec.author||'';
+_populateAuthorSelect('addTaskAuthor', rec.author||'');
 if($('addTaskTime'))$('addTaskTime').value=tm?tm[1]:'';
 populateReminderDateButtons('task');
 if(rec.reminder_date)selectReminderDate(rec.reminder_date,'','task');
