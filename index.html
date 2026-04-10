@@ -64,13 +64,6 @@ body{padding-top:24px;}
 <input id="anthropicKeyInput" type="password" placeholder="Anthropic API key (sk-ant-…)" style="flex:1;padding:0.35rem 0.5rem;background:#2a2a3e;color:#ccc;border:1px solid #444;border-radius:6px;font-size:0.72rem;font-family:monospace;" oninput="localStorage.setItem('anthropic_api_key',this.value.trim())" onfocus="this.type='text'" onblur="this.type='password'">
 <button onclick="(function(){const k=localStorage.getItem('anthropic_api_key')||'';showToast(k?'API key saved ✓':'No key set — paste key first','info');})()" style="background:#444;color:#ccc;border:none;padding:0.35rem 0.6rem;border-radius:6px;font-size:0.72rem;cursor:pointer;white-space:nowrap;">✓ Save</button>
 </div>
-<label style="display:block;margin-bottom:0.5rem;padding:0.75rem;background:#3b82f6;color:white;border-radius:8px;font-weight:600;text-align:center;cursor:pointer;font-size:0.95rem;">
-Append New Records from CSV <input type="file" accept=".csv" onchange="importCSV(this.files[0])" style="display:none">
-</label>
-<div style="font-size:0.7rem;color:#888;margin-bottom:0.75rem;text-align:center;">Adds new providers without affecting existing data</div>
-<div id="importStatus" style="font-size:0.8rem;margin-bottom:0.5rem;color:#ccc;"></div>
-<textarea id="csvPasteArea" placeholder="— or paste CSV text here —" style="width:100%;min-height:72px;background:#2a2a3e;color:#ccc;border:1px solid #444;border-radius:6px;padding:0.5rem;font-size:0.72rem;font-family:monospace;resize:vertical;margin-bottom:0.25rem;"></textarea>
-<button onclick="importCSVPaste()" style="background:#3b82f6;color:white;border:none;padding:0.6rem 1rem;border-radius:6px;font-size:0.85rem;cursor:pointer;width:100%;font-weight:600;margin-bottom:0.5rem;">Import Pasted CSV</button>
 <h4 style="margin-top:1rem;color:#0ea5e9;">Data Export</h4>
 <p style="color:#aaa;font-size:0.8rem;margin-bottom:0.75rem;">Download your CRM data as CSV files.</p>
 <button style="background:#0ea5e9;color:white;border:none;padding:0.6rem 1rem;border-radius:6px;font-size:0.85rem;cursor:pointer;width:100%;font-weight:600;" onclick="openExportModal()">Export Data</button>
