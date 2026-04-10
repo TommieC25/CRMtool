@@ -244,6 +244,17 @@ const CONTACT_LOGS = [
   ['Elizabeth',  'Clark',     seedDate(-18), 'Sarah M.', 'Call: Both pilot cases resolved successfully. Formal order approved by practice manager.', '2000-01-01'],
   ['Raymond',    'Stone',     seedDate(-28), 'Tom C.',   'Visit: Post-Mohs protocol samples delivered and reviewed with surgical team. Champion identified.', '2000-01-01'],
   ['Frances',    'Cox',       seedDate(-12), 'Sarah M.', 'Call: All 3 pilot cases closed ahead of schedule. Standing order established.', '2000-01-01'],
+
+  // ── Recent activity notes (appear at top of History when sorted by creation date) ──
+  ['Marcus',     'Chen',      seedDate(-1),  'Tom C.',   'Call: Quarterly order review — Dr. Chen requesting 15 units for month. Excellent uptake on protocol.', null],
+  ['Joseph',     'Allen',     seedDate(-1),  'Sarah M.', 'Email: Sent contract addendum. Dr. Allen approved expanded commitment. First shipment scheduled for Wednesday.', null],
+  ['Christopher','Scott',     seedDate(0),   'Tom C.',   'Visit: In-person meeting at clinic. Met with wound care team. Demonstrated technique on live case.', null],
+
+  // ── Recently completed task (shows in green, contact_date recent) ──
+  ['James',      'Rodriguez', seedDate(-3),  'Sarah M.', 'Call: Pilot results came back excellent. Dr. Rodriguez committing to 3-month trial. Sending formal agreement.', '2000-01-01'],
+
+  // ── Overdue task (contact_date few days ago, reminder_date now past) ──
+  ['Sarah',      'Mitchell',  seedDate(-6),  'Tom C.',   'Visit: Post-training follow-up. Staff had sequence questions. Resolved everything in-person during call.', seedDate(-2)],
 ];
 
 async function runSeed() {
