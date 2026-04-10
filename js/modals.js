@@ -98,18 +98,7 @@ showToast('Practice created: ' + npn, 'success');
 closePhysicianModal();
 openLocationModal(practiceId);
 }
-async function toggleAdvancedSolution(e) {
-e.preventDefault();e.stopPropagation();
-if(!currentPhysician) return;
-const newVal = !currentPhysician.advanced_solution;
-const{error}=await db.from('providers').update({advanced_solution:newVal}).eq('id',currentPhysician.id);
-if(error){showToast('Error updating AS: '+error.message,'error');return;}
-currentPhysician.advanced_solution=newVal;
-const idx=physicians.findIndex(p=>p.id===currentPhysician.id);
-if(idx>=0) physicians[idx].advanced_solution=newVal;
-renderProfile();
-showToast(newVal?'Marked as Advanced Solution':'Removed Advanced Solution','success');
-}
+
 async function toggleTarget(e) {
 e.preventDefault();e.stopPropagation();
 if(!currentPhysician) return;
