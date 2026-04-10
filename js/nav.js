@@ -509,7 +509,8 @@ Object.entries(byDate).forEach(([date, dayReminders]) => {
 const d = new Date(date + 'T12:00:00');
 const label = d.toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'});
 const isToday = date === today;
-html += `<div style="margin-bottom:0.75rem;"><div style="font-size:0.75rem;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.5rem;padding-bottom:0.25rem;border-bottom:2px solid #fcd34d;">${isToday ? '📅 TODAY — ' : ''}${label}</div>`;
+const secId = 'home-date-'+date;
+html += `<div style="margin-bottom:0.75rem;"><div style="font-size:0.75rem;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.5rem;padding-bottom:0.25rem;border-bottom:2px solid #fcd34d;display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none;" onclick="toggleTaskSection('${secId}')">${isToday ? '📅 TODAY — ' : ''}${label}<span id="tsc-caret-${secId}" style="font-size:1rem;">▼</span></div><div id="tsc-${secId}" style="${_taskSectionsState[secId]?'display:none':''}">`;
 dayReminders.forEach(r => {
 const phys = r.provider_id ? physicians.find(p => p.id === r.provider_id) : null;
 const physName = phys ? fmtName(phys) : (r.practice_location_id ? getLocationLabel(r.practice_location_id) : 'General Reminder');
@@ -527,7 +528,7 @@ ${r.author ? '<div style="margin-top:0.2rem;">'+authorBadgeHtml(r.author)+'</div
 </div>
 </div>`;
 });
-html += '</div>';
+html += '</div></div>';
 });
 }
 if (openReminders.length > 0) {
