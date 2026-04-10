@@ -118,6 +118,9 @@ function initSheetSyncUrl() {
   const saved = localStorage.getItem('sheetSyncUrl') || '';
   const el = $('sheetSyncUrl');
   if (el && saved) el.value = saved;
+  // Pre-fill Anthropic key field (shows masked)
+  const keyEl = $('anthropicKeyInput');
+  if (keyEl) keyEl.value = localStorage.getItem('anthropic_api_key') || '';
 }
 
 async function clearDatabase() {
@@ -463,8 +466,8 @@ async function handleCardScan(input) {
   const file = input.files[0];
   if (!file) return;
   input.value = '';
-  if (!ANTHROPIC_API_KEY || ANTHROPIC_API_KEY === 'YOUR_ANTHROPIC_KEY_HERE') {
-    showToast('Add your Anthropic API key to js/init.js first', 'error');
+  if (!getAnthropicKey()) {
+    showToast('Set your Anthropic API key in Admin → Scan Settings first', 'error');
     return;
   }
   showToast('Scanning — this takes a few seconds…', 'info');
@@ -522,7 +525,7 @@ Rules:
   const resp = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
-      'x-api-key': ANTHROPIC_API_KEY,
+      'x-api-key': getAnthropicKey(),
       'anthropic-version': '2023-06-01',
       'content-type': 'application/json',
       'anthropic-dangerous-direct-browser-calls': 'true'

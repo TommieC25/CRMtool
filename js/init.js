@@ -1,8 +1,8 @@
 // === js/init.js === Constants, DB client, global state, core utilities, DOMContentLoaded
 const SUPABASE_URL = 'https://kpozqhksfynpfsrbroih.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_fPHW4v5YAE5-kwY3mWQSQA_2W0zaMAm';
-// Anthropic API key for card/screenshot scanning (Claude vision)
-const ANTHROPIC_API_KEY = 'YOUR_ANTHROPIC_KEY_HERE';
+// Anthropic key stored in localStorage (set once via admin panel — never committed to git)
+function getAnthropicKey() { return localStorage.getItem('anthropic_api_key') || ''; }
 const { createClient } = window.supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const $=id=>document.getElementById(id);

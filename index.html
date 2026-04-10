@@ -60,6 +60,10 @@ body{padding-top:24px;}
 <p style="color:#aaa;font-size:0.8rem;margin-bottom:0.75rem;">Add new records to the existing database, or manage all data.</p>
 <button onclick="openCardScan()" style="background:#6366f1;color:white;border:none;padding:0.75rem 1rem;border-radius:8px;font-weight:700;text-align:center;cursor:pointer;font-size:0.95rem;width:100%;margin-bottom:0.5rem;">📷 Scan Business Card / Screenshot</button>
 <input type="file" id="cardScanInput" accept="image/*" style="display:none" onchange="handleCardScan(this)">
+<div style="display:flex;gap:0.4rem;align-items:center;margin-bottom:0.75rem;">
+<input id="anthropicKeyInput" type="password" placeholder="Anthropic API key (sk-ant-…)" style="flex:1;padding:0.35rem 0.5rem;background:#2a2a3e;color:#ccc;border:1px solid #444;border-radius:6px;font-size:0.72rem;font-family:monospace;" oninput="localStorage.setItem('anthropic_api_key',this.value.trim())" onfocus="this.type='text'" onblur="this.type='password'">
+<button onclick="(function(){const k=localStorage.getItem('anthropic_api_key')||'';showToast(k?'API key saved ✓':'No key set — paste key first','info');})()" style="background:#444;color:#ccc;border:none;padding:0.35rem 0.6rem;border-radius:6px;font-size:0.72rem;cursor:pointer;white-space:nowrap;">✓ Save</button>
+</div>
 <label style="display:block;margin-bottom:0.5rem;padding:0.75rem;background:#3b82f6;color:white;border-radius:8px;font-weight:600;text-align:center;cursor:pointer;font-size:0.95rem;">
 Append New Records from CSV <input type="file" accept=".csv" onchange="importCSV(this.files[0])" style="display:none">
 </label>
