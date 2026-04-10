@@ -170,35 +170,80 @@ const PROVIDERS = [
   ['Mildred',    'Murphy',     'MD',  'Dermatology', 2, '18', true,  'Modern Mohs Surgery Center'],
   ['Eugene',     'Bailey',     'MD',  'Dermatology', 1, '42', true,  'Dermatologic Surgery of the Valley'],
   ['Agnes',      'Rivera',     'MD',  'Dermatology', 2, '19', true,  'Precision Mohs & Skin Surgery'],
+  // ── Staff (1) — shows teal "Staff" badge instead of tier ───────────────────
+  ['Jessica',    'Porter',     '',    'Administrative Staff', '', '0', false, 'Advanced Wound Care Center'],
 ];
 
 // ── Contact logs: [first, last, date, author, notes, reminder_date_or_null] ──
+// reminder_date values:  null = plain note  |  future date = upcoming task
+//                        past date = OVERDUE |  '2099-12-31' = open/pinned
+//                        '2000-01-01' = completed (✓)
+//
+// Dates are computed relative to TODAY at seed time so task categories
+// (overdue / today / upcoming) never drift as real time passes.
+function seedDate(n) {
+  const d = new Date();
+  d.setDate(d.getDate() + n);
+  return d.toISOString().split('T')[0];
+}
+
 const CONTACT_LOGS = [
-  ['William',    'Harris',    '2026-03-15', 'Tom C.',   'Visit: Met with Dr. Harris re: new tissue matrix product line. Very receptive — requested samples for 3 patients.', null],
-  ['Elizabeth',  'Clark',     '2026-03-20', 'Sarah M.', 'Call: Follow-up on samples sent last week. She trialed on 2 patients — positive outcomes on both cases.', null],
-  ['Richard',    'Lewis',     '2026-02-28', 'Tom C.',   'Visit: Detailed advanced wound care protocol. Dr. Lewis sees ~12 wound patients/week. High volume potential.', null],
-  ['Joseph',     'Allen',     '2026-03-25', 'Tom C.',   'Visit: Lunch with Dr. Allen and staff. Placing first order next week. Strong close.', null],
-  ['Christopher','Scott',     '2026-04-01', 'Sarah M.', 'Call: Post-order check-in. 5 units used, all successful closures. Requesting peer-reviewed clinical data.', null],
-  ['Edward',     'Carter',    '2026-03-10', 'Tom C.',   'Visit: In-service for 4 wound care nurses. Dr. Carter enthusiastic about protocol. Full staff trained.', null],
-  ['Paul',       'Campbell',  '2026-03-18', 'Sarah M.', 'Email: Sent product overview and reimbursement guide per request. Awaiting follow-up call.', null],
-  ['Ruth',       'Robinson',  '2026-04-03', 'Tom C.',   'Visit: First meeting — receptionist booked 15-min intro. Very good first impression, asked for samples.', null],
-  ['Marcus',     'Chen',      '2026-03-12', 'Tom C.',   'Visit: Dr. Chen currently using competitor product. Reviewed clinical comparison data. Open to trial on next 3 DFU cases.', null],
-  ['Angela',     'Torres',    '2026-03-22', 'Tom C.',   'Visit: Best call of the week. Dr. Torres treats 30+ DFU patients/month. Wants full product demo at next visit.', null],
-  ['Christopher','Lee',       '2026-03-08', 'Tom C.',   'Visit: Staff in-service on application technique. Dr. Lee placed order for 10 units on the spot.', null],
-  ['Rebecca',    'Thompson',  '2026-03-30', 'Tom C.',   'Visit: Quarterly review. Volume up 40% vs last quarter. Top-performing provider this period.', null],
-  ['James',      'Rodriguez', '2026-02-25', 'Sarah M.', 'Call: Dr. Rodriguez asked about the new SKU. Sent spec sheet by email. Will follow up next week.', null],
-  ['Sarah',      'Mitchell',  '2026-03-17', 'Tom C.',   'Visit: Met at Lakewood office. Two new DFU cases starting treatment next week. Optimistic about outcome.', null],
-  ['David',      'Kim',       '2026-03-05', 'Sarah M.', 'Visit: Intro meeting. Dr. Kim sees mostly nail/sports cases — referred us to DFU-focused partner Dr. Park.', null],
-  ['Raymond',    'Stone',     '2026-03-05', 'Tom C.',   'Visit: Dr. Stone performs 15-20 Mohs cases/week — highest volume in territory. Very interested in post-Mohs wound management protocol.', null],
-  ['Diane',      'Collins',   '2026-03-19', 'Tom C.',   'Visit: Detailed product for post-Mohs closures. Dr. Collins wants to pilot on complex reconstructions.', null],
-  ['Frances',    'Cox',       '2026-04-02', 'Tom C.',   'Call: Following up on pilot cases. 3 patients treated, all healing ahead of expected schedule. Excellent result.', null],
-  ['Carol',      'Morris',    '2026-03-26', 'Sarah M.', 'Visit: In-service with Mohs surgery team. Strong buy-in from both surgeons and nursing staff.', null],
-  ['Eugene',     'Bailey',    '2026-04-04', 'Tom C.',   'Visit: Dr. Bailey is the go-to Mohs surgeon in the region. First order placed. Huge win for Q2.', null],
-  ['Helen',      'Adams',     '2026-03-28', 'Sarah M.', 'Visit: Left product samples. Dr. Adams will trial on 2 patients this week. Reminder set for results check-in.', '2026-04-22'],
-  ['Gregory',    'Reed',      '2026-03-31', 'Tom C.',   'Visit: First meeting. Dr. Reed has busy Mohs practice, very engaged. Needs 2nd visit with clinical data.', '2026-04-25'],
-  ['Linda',      'Park',      '2026-03-20', 'Sarah M.', 'Call: Dr. Park interested but waiting on prior auth approval for first case. Follow up in 2 weeks.', '2026-04-28'],
-  ['Angela',     'Torres',    '2026-04-03', 'Tom C.',   'Visit: Full product demonstration complete. Awaiting formulary committee approval. Strong internal advocate.', '2026-05-05'],
-  ['Michelle',   'Santos',    '2026-04-05', 'Sarah M.', 'Call: Dr. Santos requested meeting to discuss high-volume contract pricing. Schedule lunch this month.', '2026-05-12'],
+
+  // ── Plain activity notes (no reminder) ──────────────────────────────────────
+  ['William',    'Harris',    seedDate(-26), 'Tom C.',   'Visit: Met with Dr. Harris re: new tissue matrix product line. Very receptive — requested samples for 3 patients.', null],
+  ['Elizabeth',  'Clark',     seedDate(-21), 'Sarah M.', 'Call: Follow-up on samples sent last week. She trialed on 2 patients — positive outcomes on both cases.', null],
+  ['Richard',    'Lewis',     seedDate(-41), 'Tom C.',   'Visit: Detailed advanced wound care protocol. Dr. Lewis sees ~12 wound patients/week. High volume potential.', null],
+  ['Joseph',     'Allen',     seedDate(-16), 'Tom C.',   'Visit: Lunch with Dr. Allen and staff. Placing first order next week. Strong close.', null],
+  ['Christopher','Scott',     seedDate(-9),  'Sarah M.', 'Call: Post-order check-in. 5 units used, all successful closures. Requesting peer-reviewed clinical data.', null],
+  ['Edward',     'Carter',    seedDate(-31), 'Tom C.',   'Visit: In-service for 4 wound care nurses. Dr. Carter enthusiastic about protocol. Full staff trained.', null],
+  ['Paul',       'Campbell',  seedDate(-23), 'Sarah M.', 'Email: Sent product overview and reimbursement guide per request. Awaiting follow-up call.', null],
+  ['Ruth',       'Robinson',  seedDate(-7),  'Tom C.',   'Visit: First meeting — receptionist booked 15-min intro. Very good first impression, asked for samples.', null],
+  ['Marcus',     'Chen',      seedDate(-29), 'Tom C.',   'Visit: Dr. Chen currently using competitor product. Reviewed clinical comparison data. Open to trial on next 3 DFU cases.', null],
+  ['Angela',     'Torres',    seedDate(-19), 'Sarah M.', 'Visit: Best call of the week. Dr. Torres treats 30+ DFU patients/month. Wants full product demo at next visit.', null],
+  ['Christopher','Lee',       seedDate(-33), 'Tom C.',   'Visit: Staff in-service on application technique. Dr. Lee placed order for 10 units on the spot.', null],
+  ['Rebecca',    'Thompson',  seedDate(-11), 'Sarah M.', 'Visit: Quarterly review. Volume up 40% vs last quarter. Top-performing provider this period.', null],
+  ['James',      'Rodriguez', seedDate(-44), 'Sarah M.', 'Call: Dr. Rodriguez asked about the new SKU. Sent spec sheet by email. Will follow up next week.', null],
+  ['Sarah',      'Mitchell',  seedDate(-24), 'Tom C.',   'Visit: Met at Lakewood office. Two new DFU cases starting treatment next week. Optimistic about outcome.', null],
+  ['David',      'Kim',       seedDate(-36), 'Sarah M.', 'Visit: Intro meeting. Dr. Kim sees mostly nail/sports cases — referred us to DFU-focused partner Dr. Park.', null],
+  ['Raymond',    'Stone',     seedDate(-36), 'Tom C.',   'Visit: Dr. Stone performs 15-20 Mohs cases/week — highest volume in territory. Very interested in post-Mohs wound management protocol.', null],
+  ['Diane',      'Collins',   seedDate(-22), 'Sarah M.', 'Visit: Detailed product for post-Mohs closures. Dr. Collins wants to pilot on complex reconstructions.', null],
+  ['Frances',    'Cox',       seedDate(-8),  'Tom C.',   'Call: Following up on pilot cases. 3 patients treated, all healing ahead of expected schedule. Excellent result.', null],
+  ['Carol',      'Morris',    seedDate(-15), 'Sarah M.', 'Visit: In-service with Mohs surgery team. Strong buy-in from both surgeons and nursing staff.', null],
+  ['Eugene',     'Bailey',    seedDate(-6),  'Tom C.',   'Visit: Dr. Bailey is the go-to Mohs surgeon in the region. First order placed. Huge win for Q2.', null],
+
+  // ── Same date cluster: 3 entries 2 days ago → collapse caret in History ──────
+  ['Marcus',     'Chen',      seedDate(-2),  'Tom C.',   'Visit: Quarterly check-in at Denver office. All 4 active DFU cases progressing on protocol.', null],
+  ['Angela',     'Torres',    seedDate(-2),  'Tom C.',   'Visit: Dropped by Aurora office — confirmed reorder placed. Scheduling next in-service for new staff.', null],
+  ['Rebecca',    'Thompson',  seedDate(-2),  'Sarah M.', 'Email: Sent updated clinical evidence packet. Dr. Thompson presenting to department chair next week.', null],
+
+  // ── OVERDUE tasks (reminder dates in the past) — shows red section ───────────
+  ['William',    'Harris',    seedDate(-8),  'Tom C.',   'Call: Reviewed Q1 utilization — Dr. Harris wants weekly orders. Confirm shipping schedule.', seedDate(-3)],
+  ['Diane',      'Collins',   seedDate(-16), 'Sarah M.', 'Visit: Piloting on 3 Mohs reconstructions. Results due this week — need to follow up on outcomes.', seedDate(-7)],
+  ['Joseph',     'Allen',     seedDate(-9),  'Sarah M.', 'Call: First order confirmed shipped. Dr. Allen wants a call once product arrives.', seedDate(-5)],
+
+  // ── TODAY task — shows 📅 TODAY label ────────────────────────────────────────
+  ['Christopher','Scott',     seedDate(-1),  'Sarah M.', 'Call: Monthly check-in scheduled. Discuss expanding protocol to outpatient clinic.', seedDate(0)],
+
+  // ── Multiple tasks on same upcoming date (+5 days) → collapse caret in Tasks ──
+  ['Edward',     'Carter',    seedDate(-1),  'Tom C.',   'Visit: Staff training scheduled for Tuesday. Confirm headcount and prep application kits.', seedDate(5)],
+  ['Ruth',       'Robinson',  seedDate(-1),  'Sarah M.', 'Call: 2 pilot cases in progress — check outcomes and push for formal order.', seedDate(5)],
+  ['Paul',       'Campbell',  seedDate(-1),  'Tom C.',   'Visit: Lunch to discuss contract pricing. Prepare volume discount sheet beforehand.', seedDate(5)],
+
+  // ── Standard upcoming reminders ──────────────────────────────────────────────
+  ['Helen',      'Adams',     seedDate(-13), 'Sarah M.', 'Visit: Left product samples. Dr. Adams trialing on 2 patients this week. Check results.', seedDate(12)],
+  ['Gregory',    'Reed',      seedDate(-10), 'Tom C.',   'Visit: First meeting. Busy Mohs practice, very engaged. Return with clinical data.', seedDate(15)],
+  ['Linda',      'Park',      seedDate(-21), 'Sarah M.', 'Call: Waiting on prior auth for first case. Follow up once approval lands.', seedDate(18)],
+  ['Angela',     'Torres',    seedDate(-7),  'Tom C.',   'Visit: Full product demo complete. Awaiting formulary committee approval.', seedDate(25)],
+  ['Michelle',   'Santos',    seedDate(-5),  'Sarah M.', 'Call: Requested meeting for high-volume contract pricing. Schedule lunch this month.', seedDate(32)],
+
+  // ── OPEN task (📌 pinned — no due date) ──────────────────────────────────────
+  ['Eugene',     'Bailey',    seedDate(-5),  'Tom C.',   'Visit: Onboarding complete. Track monthly utilization — no specific follow-up date needed yet.', '2099-12-31'],
+
+  // ── COMPLETED tasks (✓ green section) ────────────────────────────────────────
+  ['Christopher','Lee',       seedDate(-32), 'Tom C.',   'Call: Confirmed 10-unit order in transit. Delivery date verified with distributor.', '2000-01-01'],
+  ['Elizabeth',  'Clark',     seedDate(-18), 'Sarah M.', 'Call: Both pilot cases resolved successfully. Formal order approved by practice manager.', '2000-01-01'],
+  ['Raymond',    'Stone',     seedDate(-28), 'Tom C.',   'Visit: Post-Mohs protocol samples delivered and reviewed with surgical team. Champion identified.', '2000-01-01'],
+  ['Frances',    'Cox',       seedDate(-12), 'Sarah M.', 'Call: All 3 pilot cases closed ahead of schedule. Standing order established.', '2000-01-01'],
 ];
 
 async function runSeed() {
