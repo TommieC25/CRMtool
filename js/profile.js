@@ -16,6 +16,7 @@ ${_prevView==='map'?'<button onclick="setView(\'map\')" style="margin-bottom:0.5
 <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:0.5rem;flex-wrap:wrap;">
 <div class="profile-name" style="flex:1;">${fmtName(p)}</div>
 <div style="display:flex;gap:0.5rem;flex-shrink:0;flex-wrap:wrap;">
+<button class="edit-btn" onclick="startCallSession('${p.id}',null,'${(p.mobile_phone||'').replace(/'/g,'')}')" style="background:#059669;">📞 Call</button>
 <button class="edit-btn" onclick="openContactModal()" style="background:#10b981;">+ Activity</button>
 <button class="edit-btn" onclick="editPhysicianInfo()" style="background:#1e3a8a;">Edit</button>
 <button class="delete-btn" onclick="deletePhysician()">Delete</button>
@@ -126,7 +127,8 @@ ${_prevView==='map'?'<button onclick="setView(\'map\')" style="margin-bottom:0.5
 <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:0.5rem;flex-wrap:wrap;">
 <div class="profile-name" style="flex:1;">${p.name}</div>
 <div style="display:flex;gap:0.5rem;flex-shrink:0;flex-wrap:wrap;">
-<button class="edit-btn" onclick="openPracticeContactModal()" style="background:#10b981;">+ Log Call</button>
+<button class="edit-btn" onclick="startCallSession(null,null,'')" style="background:#059669;">📞 Call</button>
+<button class="edit-btn" onclick="openPracticeContactModal()" style="background:#10b981;">+ Activity</button>
 <button class="edit-btn" onclick="editPractice()" style="background:#1e3a8a;">Edit</button>
 </div>
 </div>
@@ -173,7 +175,8 @@ locations.map(loc => `
 <h3>Activity Log</h3>
 <div style="display:flex;gap:0.5rem;">
 <button class="edit-btn" onclick="openAddTaskForPractice()">+ Task</button>
-<button class="edit-btn" onclick="openPracticeContactModal()">+ Log Call</button>
+<button class="edit-btn" onclick="startCallSession(null,null,'')" style="background:#059669;">📞 Call</button>
+<button class="edit-btn" onclick="openPracticeContactModal()">+ Activity</button>
 </div>
 </div>
 <div id="practiceActivityContent"><div class="loading">Loading activity...</div></div>
@@ -254,7 +257,8 @@ return `
 <h3>Activity Log</h3>
 <div style="display:flex;gap:0.5rem;">
 <button class="edit-btn" onclick="openAddTaskModal(null,'${loc.id}')">+ Task</button>
-<button class="edit-btn" onclick="openLocationContactModal('${loc.id}')">+ Log Call</button>
+<button class="edit-btn" onclick="startCallSession(null,'${loc.id}','${(loc.phone||'').replace(/'/g,'')}')">📞 Call</button>
+<button class="edit-btn" onclick="openLocationContactModal('${loc.id}')">+ Activity</button>
 </div>
 </div>
 <div id="locationActivityContent"><div class="loading">Loading activity...</div></div>
