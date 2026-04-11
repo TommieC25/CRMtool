@@ -237,7 +237,7 @@ function fmtSuiteAddr(addr){if(!addr)return addr;return addr.replace(/\bSte\.?\s
 function locAddr(loc){const rawAddr=fmtSuiteAddr(loc.address)||'';const a=rawAddr+', '+(loc.city||'')+' '+(loc.zip||'');return`<a href="https://maps.apple.com/?q=${encodeURIComponent(a)}" target="_blank" style="color:#1e3a8a;text-decoration:underline;">${rawAddr}${loc.city?', '+loc.city:''}${loc.zip?' '+loc.zip:''}</a>`}
 function normDegree(d){if(!d)return d;return d.replace(/\./g,'').trim();}
 function fmtPhone(p){if(!p)return'';var d=(p+'').replace(/\D/g,'');if(d.length===11&&d[0]==='1')d=d.substring(1);if(d.length===10)return d.substring(0,3)+'-'+d.substring(3,6)+'-'+d.substring(6);return p;}
-function locPhone(p,locId){var f=fmtPhone(p);return`<a href="tel:${(p||'').replace(/\D/g,'')}"${locId?` data-loc-id="${locId}"`:''}>${f||p}</a>`}
+function locPhone(p,locId){var f=fmtPhone(p);var ph=(p||'').replace(/'/g,'');return`<button onclick="startCallSession(null,'${locId||''}','${ph}')" style="background:none;border:none;color:#1e3a8a;cursor:pointer;padding:0;font-size:inherit;font-family:inherit;-webkit-tap-highlight-color:transparent;touch-action:manipulation;">${f||p}</button>`;}
 function locPhones(raw,icon,locId){if(!raw)return'';return raw.split(/[\/,]/).map(s=>s.trim()).filter(Boolean).map(p=>ld(p,icon,locPhone(p,locId))).join('');}
 function locDetails(loc){return ld(loc.address,'📍',locAddr(loc))+locPhones(loc.phone,'📞',loc.id)+locPhones(loc.fax,'📠')+ld(loc.practice_email,'✉️',loc.practice_email?`<a href="mailto:${loc.practice_email}">${loc.practice_email}</a>`:'')+ld(loc.office_hours,'🕐')+ld(loc.office_staff,'👥')+ld(loc.receptionist_name,'👤')+ld(loc.best_days,'📅')+ld(loc.notes,'📝')}
 function mi(label,val){return `<div class="meta-item"><div class="meta-label">${label}</div><div class="meta-value">${val}</div></div>`}
@@ -321,11 +321,14 @@ return `${prac ? prac.name + ' — ' : ''}${label}${loc.address ? ' (' + loc.add
 function getPhysEmailLink(phys) {
 return phys?.email ? ` <a href="mailto:${phys.email}" onclick="event.stopPropagation()" style="color:#1e3a8a;font-size:0.75rem;">✉️ Email</a>` : '';
 }
-// Returns a clickable phone link derived from a task/log record's location (empty string if none)
+// Returns a clickable phone button that opens the call session (no real dial needed)
 function getTaskPhoneLink(r) {
 const locId = r.practice_location_id || (physicianAssignments[r.provider_id]?.find(a=>a.is_primary)||physicianAssignments[r.provider_id]?.[0])?.practice_location_id;
 const loc = locId ? practiceLocations.find(l=>l.id===locId) : null;
-return loc?.phone ? ` <a href="tel:${loc.phone.replace(/\D/g,'')}" data-provider-id="${r.provider_id||''}" data-loc-id="${locId||''}" onclick="event.stopPropagation()" style="color:#1e3a8a;font-size:0.75rem;">📞 ${fmtPhone(loc.phone)}</a>` : '';
+if (!loc?.phone) return '';
+const phone = (loc.phone||'').replace(/'/g,'');
+const providerId = r.provider_id||'';
+return ` <button onclick="event.stopPropagation();startCallSession('${providerId}','${locId||''}','${phone}')" style="background:none;border:none;color:#1e3a8a;font-size:0.75rem;cursor:pointer;padding:0;-webkit-tap-highlight-color:transparent;touch-action:manipulation;">📞 ${fmtPhone(loc.phone)}</button>`;
 }
 
 // --- Normalize priority (handles legacy "TIER 3 - MODERATE" and "3" and "P3") ---
